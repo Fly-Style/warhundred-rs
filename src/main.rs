@@ -7,8 +7,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // build our application with a route
-    let app = Router::new()
-        .route("/", get(root));
+    let app = Router::new().route("/", get(root));
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
