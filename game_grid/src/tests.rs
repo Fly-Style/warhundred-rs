@@ -96,4 +96,26 @@ fn hexgrid_test_direct_path_neighbors() {
     });
 }
 
+#[test]
+fn hexgrid_test_smart_path_with_obstacles() {
+    let hex_grid = HexGrid::new_with_obstacles(5, 5, vec![(1, 3), (2, 3), (3, 2)]);
+    let from = Hex::new_default(0, 3);
+    let to = Hex::new_default(4, 3);
+
+    let path = hex_grid.smart_path(&from, &to);
+    assert_eq!(path.len(), 6);
+
+    let expected_path = vec![
+            Hex::new_default(1, 2),
+            Hex::new_default(2, 2),
+            Hex::new_default(2, 1),
+            Hex::new_default(3, 1),
+            Hex::new_default(4, 2),
+            Hex::new_default(4, 3)
+    ];
+    (0..path.len()).for_each(|i| {
+        assert_eq!(path[i], &expected_path[i]);
+    });
+}
+
 // endregion HexGrid
