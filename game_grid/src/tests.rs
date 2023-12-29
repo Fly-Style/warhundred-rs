@@ -33,8 +33,67 @@ fn when_hex_ordered_then_ordered_correctly() {
 // region HexGrid
 
 #[test]
-fn when_hexgrid_picks_neighbours_then_success() {
+fn hexgrid_test_pick_neighbour() {
+    let _hex_grid = HexGrid::new_no_obstacles(4, 4);
+}
+
+#[test]
+fn hexgrid_test_pick_all_neighbours() {
     let hex_grid = HexGrid::new_no_obstacles(4, 4);
+
+    let base_hex = Hex::new_default(2, 2);
+    let neighbours = hex_grid.pick_all_neighbours(&base_hex);
+    assert_eq!(neighbours.len(), 6);
+
+    let expected_neighbors = vec![
+        Hex::new_default(3, 2),
+        Hex::new_default(2, 1),
+        Hex::new_default(1, 1),
+        Hex::new_default(1, 2),
+        Hex::new_default(1, 3),
+        Hex::new_default(2, 3)];
+
+    (0..neighbours.len()).for_each(|i| {
+        assert_eq!(neighbours[i], &expected_neighbors[i]);
+    });
+}
+
+#[test]
+fn hexgrid_test_direct_path_common() {
+    let hex_grid = HexGrid::new_no_obstacles(4, 4);
+    let from = Hex::new_default(1, 1);
+    let to = Hex::new_default(3, 3);
+
+    let path = hex_grid.direct_path(&from, &to);
+    assert_eq!(path.len(), 4);
+
+    let expected_path = vec![
+        Hex::new_default(1, 1),
+        Hex::new_default(2, 2),
+        Hex::new_default(3, 2),
+        Hex::new_default(3, 3),
+    ];
+    (0..path.len()).for_each(|i| {
+        assert_eq!(path[i], &expected_path[i]);
+    });
+}
+
+#[test]
+fn hexgrid_test_direct_path_neighbors() {
+    let hex_grid = HexGrid::new_no_obstacles(4, 4);
+    let from = Hex::new_default(0, 0);
+    let to = Hex::new_default(1, 0);
+
+    let path = hex_grid.direct_path(&from, &to);
+    assert_eq!(path.len(), 2);
+
+    let expected_path = vec![
+        Hex::new_default(0, 0),
+        Hex::new_default(1, 0),
+    ];
+    (0..path.len()).for_each(|i| {
+        assert_eq!(path[i], &expected_path[i]);
+    });
 }
 
 // endregion HexGrid

@@ -6,7 +6,6 @@ pub mod grid {
     use lazy_static::lazy_static;
     use std::cmp::Ordering;
     use std::collections::HashSet;
-
     lazy_static! {
         static ref DIRECTIONS: Grid<(i32, i32)> = grid![
             [(1, 0), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1)]
@@ -44,6 +43,26 @@ pub mod grid {
         }
     }
 
+    impl Hex {
+        pub fn new_default(col: i32, row: i32) -> Self {
+            Hex {
+                col,
+                row,
+                obstacle: false,
+                busy: false,
+            }
+        }
+
+        pub fn new(col: i32, row: i32, obstacle: bool, busy: bool) -> Self {
+            Hex {
+                col,
+                row,
+                obstacle,
+                busy
+            }
+        }
+    }
+
     // endregion Hex
 
     // region HexWithPriority
@@ -75,6 +94,18 @@ pub mod grid {
     }
 
     // endregion HexWithPriority
+
+    pub struct Cube {
+        pub x: i32,
+        pub y: i32,
+        pub z: i32,
+    }
+
+    pub struct FloatCube {
+        pub x: f32,
+        pub y: f32,
+        pub z: f32,
+    }
 
     #[derive(Debug)]
     pub struct HexGrid {
@@ -123,6 +154,14 @@ pub mod grid {
             false
         }
 
+        pub fn pick_all_neighbours(self: &Self, hex: &Hex) -> Vec<&Hex> {
+            (0..6)
+                .map(|i: usize| -> Option<&Hex> { self.pick_neighbour(hex, i) })
+                .filter(|hex| -> bool { hex.is_some() })
+                .map(|hex| -> &Hex { hex.unwrap() })
+                .collect()
+        }
+
         fn pick_neighbour(self: &HexGrid, hex: &Hex, direction: usize) -> Option<&Hex> {
             let parity: usize = (hex.row & 1) as usize;
             let dir: (i32, i32) = *DIRECTIONS.get(parity, direction).unwrap();
@@ -137,15 +176,89 @@ pub mod grid {
                 return None;
             }
 
-            self.grid.get((hex.col + dir.0) as usize, (hex.row + dir.1) as usize)
+            self.grid
+                .get((hex.col + dir.0) as usize, (hex.row + dir.1) as usize)
         }
 
-        pub fn pick_all_neighbours(self: &Self, hex: &Hex) -> Vec<&Hex> {
-            (0..5)
-                .map(|i: usize| -> Option<&Hex> { self.pick_neighbour(hex, i) })
-                .filter(|hex| -> bool { hex.is_some() })
-                .map(|hex| -> &Hex { hex.unwrap() })
-                .collect()
+        pub fn distance(self: &Self, from: &Hex, to: &Hex) -> i32 {
+            let cube_from = self.offset_to_cube(from);
+            let cube_to = self.offset_to_cube(to);
+            let x = (cube_from.x - cube_to.x).abs();
+            let y = (cube_from.y - cube_to.y).abs();
+            let z = (cube_from.z - cube_to.z).abs();
+            self.cube_distance(x, y, z)
+        }
+
+        pub fn direct_path(self: &Self, from: &Hex, to: &Hex) -> Vec<&Hex> {
+            let mut path: Vec<Cube> = vec![];
+
+            let distance = self.distance(from, to);
+
+            let cube_from = self.offset_to_cube(from);
+            let cube_to = self.offset_to_cube(to);
+            (0..distance + 1).for_each(|i| {
+                let div = (1.0 / distance as f32) * i as f32;
+                path.push(self.cube_round(self.cube_lerp(&cube_from, &cube_to, div)))
+            });
+
+            path.iter().map(|cube| self.cube_to_offset(cube)).collect()
+        }
+
+        // TODO: decompose this functions into separate trait later.
+        fn offset_to_cube(self: &Self, hex: &Hex) -> Cube {
+            // As we are using odd-r offset hexagonal game.grid, standard offset is -1.
+            let offset = -1;
+
+            let x = hex.col - ((hex.row + offset * (hex.row & 1)) / 2);
+            let y = hex.row;
+            let z = -x - y;
+            Cube { x, y, z }
+        }
+
+        fn cube_to_offset(self: &Self, cube: &Cube) -> &Hex {
+            // As we are using odd-r offset hexagonal game.grid, standard offset is -1.
+            let offset = -1;
+
+            let col: usize = (cube.x + ((cube.y + offset * (cube.y & 1)) / 2)) as usize;
+            let row: usize = cube.y as usize;
+            return &self.grid[col][row];
+        }
+
+        fn cube_distance(self: &Self, x: i32, y: i32, z: i32) -> i32 {
+            (x + y + z) / 2
+        }
+
+        /// Cube hex linear interpolation algorithm
+        fn cube_lerp(&self, a: &Cube, b: &Cube, t: f32) -> FloatCube {
+            FloatCube {
+                x: a.x as f32 + (b.x as f32 - a.x as f32) * t,
+                y: a.y as f32 + (b.y as f32 - a.y as f32) * t,
+                z: a.z as f32 + (b.z as f32 - a.z as f32) * t,
+            }
+        }
+
+        fn cube_round(&self, cube: FloatCube) -> Cube {
+            let mut rx = cube.x.round();
+            let mut ry = cube.y.round();
+            let mut rz = cube.z.round();
+
+            let x_diff = (rx - cube.x).abs();
+            let y_diff = (ry - cube.y).abs();
+            let z_diff = (rz - cube.z).abs();
+
+            if x_diff > y_diff && x_diff > z_diff {
+                rx = -ry - rz;
+            } else if y_diff > z_diff {
+                ry = -rx - rz;
+            } else {
+                rz = -rx - ry
+            }
+
+            Cube {
+                x: rx as i32,
+                y: ry as i32,
+                z: rz as i32,
+            }
         }
     }
 }
