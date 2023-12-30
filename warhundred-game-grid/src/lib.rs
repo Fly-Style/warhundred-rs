@@ -145,12 +145,18 @@ pub mod grid {
             Self::new(width, height, &HashSet::<(i32, i32)>::new())
         }
 
-        pub fn new_with_obstacles(width: usize, height: usize, obstacles: Vec<(usize, usize)>) -> Self {
-            let mut grid = Self::new(width, height, &HashSet::<(i32, i32)>::new());
+        pub fn new_with_obstacles(
+            width: usize,
+            height: usize,
+            obstacles: Vec<(usize, usize)>,
+        ) -> Self {
+            let mut hex_grid = Self::new(width, height, &HashSet::<(i32, i32)>::new());
             obstacles.iter().for_each(|(col, row)| {
-                grid.grid[*col][*row].obstacle = true;
+                let c: usize = *col;
+                let r: usize = *row;
+                hex_grid.grid.get_mut(c, r).unwrap().obstacle = true;
             });
-            grid
+            hex_grid
         }
 
         pub fn hex(self: &HexGrid, col: usize, row: usize) -> Option<&Hex> {
@@ -297,7 +303,10 @@ pub mod grid {
 
             let col: usize = (cube.x + ((cube.y + offset * (cube.y & 1)) / 2)) as usize;
             let row: usize = cube.y as usize;
-            return &self.grid[col][row];
+            match self.grid.get(col, row) {
+                Some(hex) => hex,
+                None => panic!("No hex found {:?}", (col, row)),
+            }
         }
 
         fn cube_distance(self: &Self, x: i32, y: i32, z: i32) -> i32 {

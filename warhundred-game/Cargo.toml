@@ -1,0 +1,17 @@
+[package]
+name = "warhundred-game"
+version = "0.1.0"
+authors = ["Sasha Syrotenko <alex.syrotenko.official@gmail.com>"]
+edition = "2021"
+rust-version = "1.75"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.7.3"
+diesel = { version = "2.1.4", features = ["postgres"] }
+serde = "1.0.193"
+tracing-subscriber = "0.3.18"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1.40"
+warhundred-game-grid = {path = "../warhundred-game-grid"}

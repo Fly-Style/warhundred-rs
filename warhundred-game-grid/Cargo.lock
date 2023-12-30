@@ -3,21 +3,21 @@
 version = 3
 
 [[package]]
-name = "game_grid"
-version = "0.1.0"
-dependencies = [
- "grid",
- "lazy_static",
-]
-
-[[package]]
 name = "grid"
-version = "0.11.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1df00eed8d1f0db937f6be10e46e8072b0671accb504cf0f959c5c52c679f5b9"
+checksum = "d196ffc1627db18a531359249b2bf8416178d84b729f3cebeb278f285fb9b58c"
 
 [[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+
+[[package]]
+name = "warhundred-game-grid"
+version = "0.1.0"
+dependencies = [
+ "grid",
+ "lazy_static",
+]

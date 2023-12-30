@@ -51,7 +51,8 @@ fn hexgrid_test_pick_all_neighbours() {
         Hex::new_default(1, 1),
         Hex::new_default(1, 2),
         Hex::new_default(1, 3),
-        Hex::new_default(2, 3)];
+        Hex::new_default(2, 3),
+    ];
 
     (0..neighbours.len()).for_each(|i| {
         assert_eq!(neighbours[i], &expected_neighbors[i]);
@@ -87,10 +88,7 @@ fn hexgrid_test_direct_path_neighbors() {
     let path = hex_grid.direct_path(&from, &to);
     assert_eq!(path.len(), 2);
 
-    let expected_path = vec![
-        Hex::new_default(0, 0),
-        Hex::new_default(1, 0),
-    ];
+    let expected_path = vec![Hex::new_default(0, 0), Hex::new_default(1, 0)];
     (0..path.len()).for_each(|i| {
         assert_eq!(path[i], &expected_path[i]);
     });
@@ -106,12 +104,12 @@ fn hexgrid_test_smart_path_with_obstacles() {
     assert_eq!(path.len(), 6);
 
     let expected_path = vec![
-            Hex::new_default(1, 2),
-            Hex::new_default(2, 2),
-            Hex::new_default(2, 1),
-            Hex::new_default(3, 1),
-            Hex::new_default(4, 2),
-            Hex::new_default(4, 3)
+        Hex::new_default(1, 2),
+        Hex::new_default(2, 2),
+        Hex::new_default(2, 1),
+        Hex::new_default(3, 1),
+        Hex::new_default(4, 2),
+        Hex::new_default(4, 3),
     ];
     (0..path.len()).for_each(|i| {
         assert_eq!(path[i], &expected_path[i]);
