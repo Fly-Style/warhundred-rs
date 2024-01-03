@@ -1,3 +1,5 @@
 .idea
-/game_grid/target
+/warhundred-game/target
+/warhundred-game-grid/target
 /target
+*.sqlite
