@@ -1,5 +1,7 @@
 .idea
+/target
+/warhundred-fe/node_modules
 /warhundred-game/target
 /warhundred-game-grid/target
-/target
 *.sqlite
+.DS_Store
