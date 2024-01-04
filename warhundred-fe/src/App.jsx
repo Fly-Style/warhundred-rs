@@ -1,10 +1,10 @@
 import './App.css'
-import {RegisterForm} from "./components/RegisterForm/RegisterForm.jsx";
+import {MainPage} from "./pages/MainPage/MainPage.jsx";
 
 function App() {
   return (
     <>
-      <RegisterForm></RegisterForm>
+      <MainPage></MainPage>
     </>
   )
 }

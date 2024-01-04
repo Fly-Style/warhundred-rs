@@ -1,45 +1,32 @@
 import {useState} from "react";
 import axios from "axios";
-import "./RegisterForm.css"
+import "../MainPage.css"
+import {handleFormChange} from "../../../util/utils.js";
 
-export const RegisterForm = () => {
+export const LoginForm = () => {
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
     password: ""
   });
 
-  const handleChange = (event) => {
-    const {name, value} = event.target;
-    setFormData((prevState) => ({...prevState, [name]: value}));
-  };
-
   const submitHandler = () => {
     event.preventDefault();
-    axios.post("/register", formData)
+    axios.post("/login", formData)
       .then(res => alert(res))
       .catch(err => console.log(event));
   }
 
   return (
     <>
-      <form onSubmit={submitHandler} className="main">
+      <form onSubmit={submitHandler} className="main-page__form">
         <label>
           Username:
           <input
             type="text"
             name="username"
             value={formData.username}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          E-mail:
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
+            className="main-page__input"
+            onChange={handleFormChange}
           />
         </label>
         <label>
@@ -48,10 +35,15 @@ export const RegisterForm = () => {
             type="password"
             name="password"
             value={formData.password}
-            onChange={handleChange}
+            className="main-page__input"
+            onChange={handleFormChange}
           />
         </label>
-        <input type="submit" className="submit" value="Submit"/>
+        <input
+          type="submit"
+          value="Login"
+          className="main-page__submit"
+        />
       </form>
     </>
   )

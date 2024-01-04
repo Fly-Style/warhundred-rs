@@ -1,0 +1,50 @@
+:root {
+  --main-font-size: 1.5rem;
+}
+
+.main-page__main {
+  font-size: var(--main-font-size);
+  padding: 0 1em;
+}
+
+.main-page__tab-list {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  padding-inline-start: 0;
+  /*noinspection CssInvalidPropertyValue*/
+  width: -webkit-fill-available;
+}
+
+.main-page__list-item {
+  flex-grow: 1;
+  list-style-type: none;
+}
+
+.main-page__tab-list-btn {
+  /*noinspection CssInvalidPropertyValue*/
+  width: -webkit-fill-available;
+}
+
+.main-page__form {
+  font-size: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  border: 1px solid;
+  padding: 1rem;
+}
+
+.main-page__input {
+  font-size: 1.5rem;
+  margin: 1rem;
+}
+
+.main-page__submit {
+  font-size: 1.5rem;
+  margin-top: 1rem;
+  /*noinspection CssInvalidPropertyValue*/
+  width: -webkit-fill-available;
+}
