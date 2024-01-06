@@ -26,7 +26,7 @@ export const LoginForm = () => {
             name="username"
             value={formData.username}
             className="main-page__input"
-            onChange={handleFormChange}
+            onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
         <label>
@@ -36,7 +36,7 @@ export const LoginForm = () => {
             name="password"
             value={formData.password}
             className="main-page__input"
-            onChange={handleFormChange}
+            onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
         <input

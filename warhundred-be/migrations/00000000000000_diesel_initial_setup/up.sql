@@ -1,14 +1,44 @@
-CREATE SCHEMA IF NOT EXISTS warhundred;
+-- This file was automatically created by Diesel to setup helper functions
+-- and other internal bookkeeping. This file is safe to edit, any future
+-- changes will be added to existing projects as new migrations.
 
---- MISC ---
 
-CREATE FUNCTION read_only() RETURNS TRIGGER AS
-    $$
-BEGIN
-    RAISE EXCEPTION 'Cannot modify read-only table.';
-END;
+-- Sets up a trigger for the given table to automatically set a column called
+-- `updated_at` whenever the row is modified (unless `updated_at` was included
+-- in the modified columns)
+--
+-- # Example
+--
+-- ```sql
+-- CREATE TABLE users (id SERIAL PRIMARY KEY, updated_at TIMESTAMP NOT NULL DEFAULT NOW());
+--
+-- SELECT diesel_manage_updated_at('users');
+-- ```
+
+-- BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+CREATE OR REPLACE FUNCTION diesel_manage_updated_at(_tbl regclass) RETURNS VOID AS
 $$
-LANGUAGE plpgsql;
+BEGIN
+    EXECUTE format('CREATE TRIGGER set_updated_at BEFORE UPDATE ON %s
+                    FOR EACH ROW EXECUTE PROCEDURE diesel_set_updated_at()', _tbl);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION diesel_set_updated_at() RETURNS trigger AS
+$$
+BEGIN
+    IF (
+        NEW IS DISTINCT FROM OLD AND
+        NEW.updated_at IS NOT DISTINCT FROM OLD.updated_at
+        ) THEN
+        NEW.updated_at := current_timestamp;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE SCHEMA IF NOT EXISTS warhundred;
 
 --- MAP OBJECTS ---
 
@@ -27,7 +57,7 @@ CREATE TABLE IF NOT EXISTS warhundred.town_location
     id     SERIAL PRIMARY KEY,
     "name" TEXT NOT NULL,
     UNIQUE ("name")
-    );
+);
 
 --- GUILDS ---
 
@@ -37,7 +67,7 @@ CREATE TABLE IF NOT EXISTS warhundred.guild
     "name" TEXT NOT NULL,
     rank   INT  NOT NULL DEFAULT 1,
     UNIQUE ("name")
-    );
+);
 
 --- PLAYERS ---
 
@@ -52,13 +82,13 @@ CREATE TABLE IF NOT EXISTS warhundred.player
     last_town_location INT REFERENCES warhundred.town_location (id),
     guild_id           INT REFERENCES warhundred.guild (id),
     UNIQUE (nickname, email)
-    );
+);
 
 CREATE TABLE IF NOT EXISTS warhundred.player_class
 (
     class_id   INT         NOT NULL PRIMARY KEY,
     class_name VARCHAR(16) NOT NULL
-    );
+);
 
 INSERT INTO warhundred.player_class
 VALUES
@@ -68,11 +98,6 @@ VALUES
     (3, 'healer'),
     (4, 'rogue'),
     (5, 'lancer');
-
-CREATE TRIGGER read_only_trigger
-    BEFORE INSERT OR UPDATE OR DELETE
-                     ON warhundred.player_class
-                         EXECUTE PROCEDURE read_only();
 
 CREATE TABLE IF NOT EXISTS warhundred.player_attributes
 (
@@ -88,7 +113,7 @@ CREATE TABLE IF NOT EXISTS warhundred.player_attributes
     level      INT         NOT NULL DEFAULT 0,
     valor      INT         NOT NULL DEFAULT 0,
     rank       VARCHAR(32) NOT NULL DEFAULT 0
-    );
+);
 
 --- ITEMS ---
 
@@ -103,7 +128,7 @@ CREATE TABLE IF NOT EXISTS warhundred.item
     intellect_req INT  NOT NULL DEFAULT 0,
     valor_req     INT  NOT NULL DEFAULT 0,
     class_req     INT REFERENCES warhundred.player_class (class_id)
-    );
+);
 
 CREATE TABLE IF NOT EXISTS warhundred.weapon_item
 (
@@ -112,25 +137,25 @@ CREATE TABLE IF NOT EXISTS warhundred.weapon_item
     action_points_to_use INT NOT NULL DEFAULT 2,
     basic_damage         INT NOT NULL DEFAULT 0,
     "range"              INT NOT NULL DEFAULT 1
-    );
+);
 
 CREATE TABLE IF NOT EXISTS warhundred.gear_item
 (
     id      SERIAL PRIMARY KEY,
     item_id INT NOT NULL REFERENCES warhundred.item (id)
-    );
+);
 
 CREATE TABLE IF NOT EXISTS warhundred.battle_consumable_item
 (
     id      SERIAL PRIMARY KEY,
     item_id INT NOT NULL REFERENCES warhundred.item (id)
-    );
+);
 
 CREATE TABLE IF NOT EXISTS warhundred.non_battle_consumable_item
 (
     id      SERIAL PRIMARY KEY,
     item_id INT NOT NULL REFERENCES warhundred.item (id)
-    );
+);
 
 --- INVENTORY ---
 
@@ -142,7 +167,7 @@ CREATE TABLE IF NOT EXISTS warhundred.player_inventory
     amount    INT     NOT NULL DEFAULT 1,
     weight    REAL    NOT NULL DEFAULT 0,
     equipped  BOOLEAN NOT NULL DEFAULT FALSE
-    );
+);
 
 --- BOTS ---
 
@@ -153,7 +178,22 @@ CREATE TABLE IF NOT EXISTS warhundred.bot
     name          TEXT NOT NULL,
     level         INT  NOT NULL DEFAULT 1,
     action_points INT  NOT NULL DEFAULT 6
-    );
+);
+
+--- MISC ---
+
+CREATE FUNCTION read_only() RETURNS TRIGGER AS
+$$
+BEGIN
+    RAISE EXCEPTION 'Cannot modify read-only table.';
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE TRIGGER read_only_trigger
+    BEFORE INSERT OR UPDATE OR DELETE
+    ON warhundred.player_class
+EXECUTE PROCEDURE read_only();
 
 --- BATTLE ---
 
@@ -163,24 +203,26 @@ CREATE TYPE warhundred.WINNER AS ENUM ('en', 'fr', 'bots');
 CREATE TABLE warhundred.battle
 (
     id         SERIAL PRIMARY KEY,
-    start_time TIMESTAMP NOT NULL,
-    end_time   TIMESTAMP NOT NULL,
-    winner     WINNER    NOT NULL
+    start_time TIMESTAMP         NOT NULL,
+    end_time   TIMESTAMP         NOT NULL,
+    winner     warhundred.WINNER NOT NULL
 );
 
 CREATE TABLE warhundred.battle_participant
 (
-    battle_id      INT     NOT NULL REFERENCES warhundred.battle (id),
+    battle_id      INT PRIMARY KEY NOT NULL REFERENCES warhundred.battle (id),
     player_id      INT REFERENCES warhundred.player (id),
     bot_id         INT REFERENCES warhundred.bot (id),
-    outcome_damage INT     NOT NULL DEFAULT 0,
-    income_damage  INT     NOT NULL DEFAULT 0,
-    gained_exp     INT     NOT NULL DEFAULT 0,
-    gained_valor   BOOLEAN NOT NULL
+    outcome_damage INT             NOT NULL DEFAULT 0,
+    income_damage  INT             NOT NULL DEFAULT 0,
+    gained_exp     INT             NOT NULL DEFAULT 0,
+    gained_valor   BOOLEAN         NOT NULL
 );
 
 CREATE TABLE warhundred.battle_log
 (
-    battle_id INT  NOT NULL REFERENCES warhundred.battle (id),
-    log       TEXT NOT NULL
+    id  SERIAL PRIMARY KEY REFERENCES warhundred.battle (id),
+    log TEXT NOT NULL
 );
+
+-- COMMIT TRANSACTION;

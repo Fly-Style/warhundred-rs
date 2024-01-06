@@ -27,7 +27,7 @@ export const RegisterForm = () => {
             name="username"
             value={formData.username}
             className="main-page__input"
-            onChange={handleFormChange}
+            onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
         <label>
@@ -37,7 +37,7 @@ export const RegisterForm = () => {
             name="email"
             value={formData.email}
             className="main-page__input"
-            onChange={handleFormChange}
+            onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
         <label>
@@ -47,7 +47,7 @@ export const RegisterForm = () => {
             name="password"
             value={formData.password}
             className="main-page__input"
-            onChange={handleFormChange}
+            onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
         <input
