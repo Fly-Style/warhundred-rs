@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "warhundred-game-grid",
-    "warhundred-game",
+    "warhundred-be",
+    "warhundred-web",
 ]
 resolver = "2"

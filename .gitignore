@@ -2,7 +2,7 @@
 /public
 /target
 /warhundred-fe/node_modules
-/warhundred-game/public
+/warhundred-web/public
 /warhundred-game-grid/target
 *.sqlite
 .DS_Store
