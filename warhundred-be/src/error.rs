@@ -14,8 +14,8 @@ pub fn internal_error<E>(_err: E) -> AppError {
 #[derive(Debug)]
 pub enum InfraError {
     InternalServerError,
-    // Represents an internal server error
-    NotFound,            // Represents a resource not found error
+    NotFound,
+    DatabaseError(String)
 }
 
 pub fn adapt_infra_error<T: Error>(error: T) -> InfraError {
@@ -27,6 +27,7 @@ impl fmt::Display for InfraError {
         match self {
             InfraError::NotFound => write!(f, "Not found"), // Display "Not found" for NotFound variant
             InfraError::InternalServerError => write!(f, "Internal server error"), // Display "Internal server error" for InternalServerError variant
+            _ =>  write!(f, "Unknown error")
         }
     }
 }

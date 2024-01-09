@@ -11,12 +11,12 @@ pub async fn register(
 ) -> Result<Json<RegisterPlayerResponse>, warhundred_be::error::PlayerError> {
     println!("Registering player: {:?}", new_player);
     let new_player = InsertablePlayer {
-        nickname: new_player.nickname,
+        nickname: new_player.username,
         email: new_player.email,
         password: new_player.password,
         last_login: std::time::SystemTime::now(),
         last_map_location: 0,
-        last_town_location: None,
+        last_town_location: 0,
         guild_id: None,
     };
 

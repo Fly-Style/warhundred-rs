@@ -78,9 +78,12 @@ CREATE TABLE IF NOT EXISTS warhundred.player
     email              TEXT      NOT NULL,
     password           TEXT      NOT NULL,
     last_login         TIMESTAMP NOT NULL DEFAULT NOW(),
-    last_map_location  INT       NOT NULL REFERENCES warhundred.map_location (id),
-    last_town_location INT REFERENCES warhundred.town_location (id),
-    guild_id           INT REFERENCES warhundred.guild (id),
+    last_map_location  INT       NOT NULL,
+    last_town_location INT       NOT NULL,
+    guild_id           INT,
+--     last_map_location  INT       NOT NULL REFERENCES warhundred.map_location (id),
+--     last_town_location INT REFERENCES warhundred.town_location (id),
+--     guild_id           INT REFERENCES warhundred.guild (id),
     UNIQUE (nickname, email)
 );
 

@@ -117,7 +117,7 @@ pub mod warhundred {
             password -> Text,
             last_login -> Timestamp,
             last_map_location -> Int4,
-            last_town_location -> Nullable<Int4>,
+            last_town_location -> Int4,
             guild_id -> Nullable<Int4>,
         }
     }
@@ -185,9 +185,6 @@ pub mod warhundred {
     diesel::joinable!(gear_item -> item (item_id));
     diesel::joinable!(item -> player_class (class_req));
     diesel::joinable!(non_battle_consumable_item -> item (item_id));
-    diesel::joinable!(player -> guild (guild_id));
-    diesel::joinable!(player -> map_location (last_map_location));
-    diesel::joinable!(player -> town_location (last_town_location));
     diesel::joinable!(player_attributes -> player (player_id));
     diesel::joinable!(player_attributes -> player_class (class_id));
     diesel::joinable!(player_inventory -> item (item_id));

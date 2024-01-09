@@ -14,6 +14,7 @@ pub struct JsonExtractor<T>(pub T);
 
 impl From<JsonRejection> for AppError {
     fn from(rejection: JsonRejection) -> Self {
+        println!("{}", rejection);
         // Convert the JsonRejection into a BodyParsingError with the rejection message
         AppError::BodyParsingError(rejection.to_string())
     }

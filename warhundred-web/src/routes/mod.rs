@@ -4,7 +4,7 @@ pub mod player_routes;
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterPlayerRequest {
-    nickname: String,
+    username: String,
     email: String,
     password: String,
 }

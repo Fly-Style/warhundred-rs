@@ -12,9 +12,12 @@ export const RegisterForm = () => {
 
   const submitHandler = () => {
     event.preventDefault();
-    axios.post("/register", formData)
+    console.log(formData);
+    axios.post("/register", formData, {
+      headers: {'Content-Type': 'application/json',}
+    })
       .then(res => alert(res))
-      .catch(err => console.log(event));
+      .catch(err => console.log(err));
   }
 
   return (

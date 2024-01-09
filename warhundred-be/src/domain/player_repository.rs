@@ -11,7 +11,7 @@ pub struct Player {
     pub password: String,
     pub last_login: std::time::SystemTime,
     pub last_map_location: i32,
-    pub last_town_location: Option<i32>,
+    pub last_town_location: i32,
     pub guild_id: Option<i32>,
 }
 
@@ -24,7 +24,7 @@ pub struct InsertablePlayer {
     pub password: String,
     pub last_login: std::time::SystemTime,
     pub last_map_location: i32,
-    pub last_town_location: Option<i32>,
+    pub last_town_location: i32,
     pub guild_id: Option<i32>,
 }
 
@@ -37,7 +37,7 @@ pub struct PlayerView {
     pub email: String,
     pub last_login: std::time::SystemTime,
     pub last_map_location: i32,
-    pub last_town_location: Option<i32>,
+    pub last_town_location: i32,
     pub guild_id: Option<i32>,
 }
 
@@ -77,7 +77,7 @@ fn adapt_player_to_player_view(new_player: Player) -> PlayerView {
         email: new_player.email,
         last_login: new_player.last_login,
         last_map_location: 0,
-        last_town_location: None,
+        last_town_location: 0,
         guild_id: None,
     }
 }

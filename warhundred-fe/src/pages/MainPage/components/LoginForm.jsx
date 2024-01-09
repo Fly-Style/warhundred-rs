@@ -11,9 +11,11 @@ export const LoginForm = () => {
 
   const submitHandler = () => {
     event.preventDefault();
-    axios.post("/login", formData)
+    axios.post("/login", formData, {
+      headers: {'Content-Type': 'application/json',}
+    })
       .then(res => alert(res))
-      .catch(err => console.log(event));
+      .catch(err => console.log(err));
   }
 
   return (
