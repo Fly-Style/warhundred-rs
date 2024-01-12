@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS warhundred.guild
 
 CREATE TABLE IF NOT EXISTS warhundred.player
 (
-    id                 SERIAL PRIMARY KEY,
+    id                 BIGSERIAL PRIMARY KEY,
     nickname           TEXT      NOT NULL,
     email              TEXT      NOT NULL,
     password           TEXT      NOT NULL,
@@ -86,6 +86,8 @@ CREATE TABLE IF NOT EXISTS warhundred.player
 --     guild_id           INT REFERENCES warhundred.guild (id),
     UNIQUE (nickname, email)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS player_nickname ON warhundred.player (nickname);
 
 CREATE TABLE IF NOT EXISTS warhundred.player_class
 (
@@ -104,9 +106,9 @@ VALUES
 
 CREATE TABLE IF NOT EXISTS warhundred.player_attributes
 (
-    id         SERIAL PRIMARY KEY,
+    id         BIGSERIAL PRIMARY KEY,
     class_id   INT         NOT NULL REFERENCES warhundred.player_class (class_id),
-    player_id  INT         NOT NULL REFERENCES warhundred.player (id),
+    player_id  BIGINT      NOT NULL REFERENCES warhundred.player (id),
     strength   INT         NOT NULL DEFAULT 0,
     dexterity  INT         NOT NULL DEFAULT 0,
     physique   INT         NOT NULL DEFAULT 0,
@@ -165,7 +167,7 @@ CREATE TABLE IF NOT EXISTS warhundred.non_battle_consumable_item
 CREATE TABLE IF NOT EXISTS warhundred.player_inventory
 (
     id        SERIAL PRIMARY KEY,
-    player_id INT     NOT NULL REFERENCES warhundred.player (id),
+    player_id BIGINT  NOT NULL REFERENCES warhundred.player (id),
     item_id   INT     NOT NULL REFERENCES warhundred.item (id),
     amount    INT     NOT NULL DEFAULT 1,
     weight    REAL    NOT NULL DEFAULT 0,
@@ -205,7 +207,7 @@ CREATE TYPE warhundred.WINNER AS ENUM ('en', 'fr', 'bots');
 -- Maximum - 32 players/bots per battle are allowed. Battle record will be stored AFTER the battle is finished.
 CREATE TABLE warhundred.battle
 (
-    id         SERIAL PRIMARY KEY,
+    id         BIGSERIAL PRIMARY KEY,
     start_time TIMESTAMP         NOT NULL,
     end_time   TIMESTAMP         NOT NULL,
     winner     warhundred.WINNER NOT NULL
@@ -213,18 +215,18 @@ CREATE TABLE warhundred.battle
 
 CREATE TABLE warhundred.battle_participant
 (
-    battle_id      INT PRIMARY KEY NOT NULL REFERENCES warhundred.battle (id),
-    player_id      INT REFERENCES warhundred.player (id),
+    battle_id      BIGINT PRIMARY KEY NOT NULL REFERENCES warhundred.battle (id),
+    player_id      BIGINT REFERENCES warhundred.player (id),
     bot_id         INT REFERENCES warhundred.bot (id),
-    outcome_damage INT             NOT NULL DEFAULT 0,
-    income_damage  INT             NOT NULL DEFAULT 0,
-    gained_exp     INT             NOT NULL DEFAULT 0,
-    gained_valor   BOOLEAN         NOT NULL
+    outcome_damage INT                NOT NULL DEFAULT 0,
+    income_damage  INT                NOT NULL DEFAULT 0,
+    gained_exp     INT                NOT NULL DEFAULT 0,
+    gained_valor   BOOLEAN            NOT NULL
 );
 
 CREATE TABLE warhundred.battle_log
 (
-    id  SERIAL PRIMARY KEY REFERENCES warhundred.battle (id),
+    id  BIGINT PRIMARY KEY REFERENCES warhundred.battle (id),
     log TEXT NOT NULL
 );
 

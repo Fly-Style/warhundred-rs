@@ -1,25 +1,22 @@
+use crate::error::{AppError, PlayerError};
 use axum::extract::rejection::JsonRejection;
 use axum::http::StatusCode;
-use axum::Json;
 use axum::response::IntoResponse;
+use axum::Json;
 use axum_macros::FromRequest;
 use serde_json::json;
-use crate::error::{AppError, PlayerError};
 
 // Define a custom extractor for JSON data
 #[derive(FromRequest)]
-#[from_request(via(axum::Json), rejection(AppError))]  // Derive the FromRequest trait with specific configuration
+#[from_request(via(axum::Json), rejection(AppError))] // Derive the FromRequest trait with specific configuration
 pub struct JsonExtractor<T>(pub T);
-
 
 impl From<JsonRejection> for AppError {
     fn from(rejection: JsonRejection) -> Self {
-        println!("{}", rejection);
         // Convert the JsonRejection into a BodyParsingError with the rejection message
         AppError::BodyParsingError(rejection.to_string())
     }
 }
-
 
 // Implement the `IntoResponse` trait for the `AppError` enumeration
 impl IntoResponse for AppError {
@@ -57,12 +54,11 @@ impl IntoResponse for PlayerError {
         };
         (
             status,
-            Json(
-                json!({
-                    "message": err_msg,
-                    "happened_at" : std::time::SystemTime::now()
-                }),
-            ),
-        ).into_response()
+            Json(json!({
+                "message": err_msg,
+                "happened_at" : std::time::SystemTime::now()
+            })),
+        )
+            .into_response()
     }
 }

@@ -16,7 +16,7 @@ pub mod warhundred {
         use super::sql_types::Winner;
 
         warhundred.battle (id) {
-            id -> Int4,
+            id -> Int8,
             start_time -> Timestamp,
             end_time -> Timestamp,
             winner -> Winner,
@@ -32,15 +32,15 @@ pub mod warhundred {
 
     diesel::table! {
         warhundred.battle_log (id) {
-            id -> Int4,
+            id -> Int8,
             log -> Text,
         }
     }
 
     diesel::table! {
         warhundred.battle_participant (battle_id) {
-            battle_id -> Int4,
-            player_id -> Nullable<Int4>,
+            battle_id -> Int8,
+            player_id -> Nullable<Int8>,
             bot_id -> Nullable<Int4>,
             outcome_damage -> Int4,
             income_damage -> Int4,
@@ -111,7 +111,7 @@ pub mod warhundred {
 
     diesel::table! {
         warhundred.player (id) {
-            id -> Int4,
+            id -> Int8,
             nickname -> Text,
             email -> Text,
             password -> Text,
@@ -124,9 +124,9 @@ pub mod warhundred {
 
     diesel::table! {
         warhundred.player_attributes (id) {
-            id -> Int4,
+            id -> Int8,
             class_id -> Int4,
-            player_id -> Int4,
+            player_id -> Int8,
             strength -> Int4,
             dexterity -> Int4,
             physique -> Int4,
@@ -151,7 +151,7 @@ pub mod warhundred {
     diesel::table! {
         warhundred.player_inventory (id) {
             id -> Int4,
-            player_id -> Int4,
+            player_id -> Int8,
             item_id -> Int4,
             amount -> Int4,
             weight -> Float4,

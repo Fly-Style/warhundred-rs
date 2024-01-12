@@ -1,11 +1,14 @@
-use diesel::prelude::*;
 use crate::error::PlayerError;
+use axum_login::AuthUser;
+use deadpool_diesel::postgres::Pool;
+use diesel::prelude::*;
+use std::fmt::Debug;
 
-#[derive(Queryable, Selectable, Debug)]
+#[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::warhundred::player)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Player {
-    pub id: i32,
+    pub id: i64,
     pub nickname: String,
     pub email: String,
     pub password: String,
@@ -13,6 +16,33 @@ pub struct Player {
     pub last_map_location: i32,
     pub last_town_location: i32,
     pub guild_id: Option<i32>,
+}
+
+impl Debug for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Player")
+            .field("id", &self.id)
+            .field("nickname", &self.nickname)
+            .field("email", &self.email)
+            .field("password", &"[redacted]")
+            .field("last_login", &self.last_login)
+            .field("last_map_location", &self.last_map_location)
+            .field("last_town_location", &self.last_town_location)
+            .field("guild_id", &self.guild_id)
+            .finish()
+    }
+}
+
+impl AuthUser for Player {
+    type Id = String;
+
+    fn id(&self) -> Self::Id {
+        self.nickname.clone()
+    }
+
+    fn session_auth_hash(&self) -> &[u8] {
+        self.nickname.as_bytes()
+    }
 }
 
 #[derive(Insertable, Debug)]
@@ -28,72 +58,40 @@ pub struct InsertablePlayer {
     pub guild_id: Option<i32>,
 }
 
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::warhundred::player)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct PlayerView {
-    pub id: i32,
-    pub nickname: String,
-    pub email: String,
-    pub last_login: std::time::SystemTime,
-    pub last_map_location: i32,
-    pub last_town_location: i32,
-    pub guild_id: Option<i32>,
+#[derive(Debug, Clone)]
+pub struct Credentials {
+    pub username: String,
+    pub password: String,
 }
 
-pub async fn get_player(pool: &deadpool_diesel::postgres::Pool, nick: String) -> Result<PlayerView, PlayerError> {
+pub(crate) async fn get_player_by_nick(
+    pool: &Pool,
+    nick: String,
+) -> Result<Option<Player>, PlayerError> {
     use crate::schema::warhundred::player::dsl::*;
     let conn = pool.get().await.unwrap();
     let _nick = nick.clone();
 
     let res = conn
-        .interact(move |conn| {
-            player
-                .filter(nickname.eq(nick))
-                .first::<Player>(conn)
-        })
+        .interact(move |conn| player.filter(nickname.eq(nick)).first::<Player>(conn))
         .await;
     // TODO: understand map_err
     // .map_err(adapt_infra_error)?
     // .map_err(adapt_infra_error)?;
 
     match res {
-        Ok(qr) => {
-            match qr {
-                Ok(res) => {
-                    return Ok(adapt_player_to_player_view(res));
-                }
-                Err(_) => Err(PlayerError::NotFound(_nick))
-            }
-        }
-        Err(_) => Err(PlayerError::NotFound(_nick))
+        Ok(qr) => match qr {
+            Ok(res) => Ok(Some(res)),
+            Err(_) => Err(PlayerError::NotFound(_nick)),
+        },
+        Err(_) => Err(PlayerError::NotFound(_nick)),
     }
-}
-
-fn adapt_player_to_player_view(new_player: Player) -> PlayerView {
-    PlayerView {
-        id: new_player.id,
-        nickname: new_player.nickname,
-        email: new_player.email,
-        last_login: new_player.last_login,
-        last_map_location: 0,
-        last_town_location: 0,
-        guild_id: None,
-    }
-}
-
-#[derive(Queryable, Selectable, Debug)]
-#[diesel(table_name = crate::schema::warhundred::player)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct SafePlayerView {
-    pub id: i32,
-    pub nickname: String,
 }
 
 pub async fn register_player(
-    pool: &deadpool_diesel::postgres::Pool,
+    pool: &Pool,
     new_player: InsertablePlayer,
-) -> Result<SafePlayerView, PlayerError> {
+) -> Result<Player, PlayerError> {
     use crate::schema::warhundred::player::dsl::*;
 
     println!("Registering player: {:?}", new_player);
@@ -110,14 +108,10 @@ pub async fn register_player(
         .await;
 
     match res {
-        Ok(qr) => {
-            match qr {
-                Ok(res) => {
-                    return Ok(SafePlayerView { id: res.id, nickname: res.nickname });
-                }
-                Err(_) => Err(PlayerError::CannotRegister(String::from(nick))),
-            }
-        }
+        Ok(qr) => match qr {
+            Ok(res) => Ok(res),
+            Err(_) => Err(PlayerError::CannotRegister(String::from(nick))),
+        },
         Err(_) => Err(PlayerError::CannotRegister(String::from(nick))),
     }
 }

@@ -2,8 +2,8 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum AppError {
-    InternalServerError,        // Represents an internal server error
-    BodyParsingError(String),   // Represents an error related to request body parsing
+    InternalServerError,      // Represents an internal server error
+    BodyParsingError(String), // Represents an error related to request body parsing
 }
 
 // Define a util to create an internal server error
@@ -15,7 +15,7 @@ pub fn internal_error<E>(_err: E) -> AppError {
 pub enum InfraError {
     InternalServerError,
     NotFound,
-    DatabaseError(String)
+    DatabaseError(String),
 }
 
 pub fn adapt_infra_error<T: Error>(error: T) -> InfraError {
@@ -27,7 +27,7 @@ impl fmt::Display for InfraError {
         match self {
             InfraError::NotFound => write!(f, "Not found"), // Display "Not found" for NotFound variant
             InfraError::InternalServerError => write!(f, "Internal server error"), // Display "Internal server error" for InternalServerError variant
-            _ =>  write!(f, "Unknown error")
+            _ => write!(f, "Unknown error"),
         }
     }
 }
@@ -35,6 +35,7 @@ impl fmt::Display for InfraError {
 #[derive(Debug)]
 pub enum PlayerError {
     CannotRegister(String),
+    NotFoundNoSuchId, // TODO: fix/change
     NotFound(String),
     InfraError(InfraError),
 }
@@ -42,12 +43,16 @@ pub enum PlayerError {
 impl fmt::Display for PlayerError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PlayerError::CannotRegister(nick) => write!(f, "Cannot register new player with nickname {}", nick),
+            PlayerError::CannotRegister(nick) => {
+                write!(f, "Cannot register new player with nickname {}", nick)
+            }
             PlayerError::NotFound(reason) => write!(f, "{}", reason),
             _ => write!(f, "Internal server error"),
         }
     }
 }
+
+impl std::error::Error for PlayerError {}
 
 // Define a custom Error trait for types that can be converted to InfraError
 pub trait Error {
