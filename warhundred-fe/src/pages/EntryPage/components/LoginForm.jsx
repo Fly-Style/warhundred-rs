@@ -1,6 +1,6 @@
 import {useState} from "react";
 import axios from "axios";
-import "../MainPage.css"
+import "../EntryPage.css"
 import {handleFormChange} from "../../../util/utils.js";
 
 export const LoginForm = () => {
@@ -20,14 +20,14 @@ export const LoginForm = () => {
 
   return (
     <>
-      <form onSubmit={submitHandler} className="main-page__form">
+      <form onSubmit={submitHandler} className="entry-page__form">
         <label>
           Username:
           <input
             type="text"
             name="username"
             value={formData.username}
-            className="main-page__input"
+            className="entry-page__input"
             onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
@@ -37,14 +37,14 @@ export const LoginForm = () => {
             type="password"
             name="password"
             value={formData.password}
-            className="main-page__input"
+            className="entry-page__input"
             onChange={(e) => handleFormChange(e, setFormData)}
           />
         </label>
         <input
           type="submit"
           value="Login"
-          className="main-page__submit"
+          className="entry-page__submit"
         />
       </form>
     </>
