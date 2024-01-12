@@ -1,28 +1,18 @@
-import {Tabs, TabList, TabPanel, Tab} from "react-tabs";
-import {RegisterForm} from "./components/RegisterForm.jsx";
-import {LoginForm} from "./components/LoginForm.jsx";
+import "./MainPage.css"
 
 export const MainPage = () => {
-    return (
-        <>
-          <h2>Welcome to War Hundred</h2>
-          <Tabs className="main-page__main">
-            <TabList className="main-page__tab-list">
-              <Tab className="main-page__list-item">
-                <button className="main-page__tab-list-btn">Register</button>
-              </Tab>
-              <Tab className="main-page__list-item">
-                <button className="main-page__tab-list-btn">Login</button>
-              </Tab>
-            </TabList>
-
-            <TabPanel>
-              <RegisterForm></RegisterForm>
-            </TabPanel>
-            <TabPanel>
-              <LoginForm></LoginForm>
-            </TabPanel>
-          </Tabs>
-        </>
-    )
+  return (
+      <div className="parent">
+        <div className="cnt subgrid-parent div1">
+          <div className="cnt div11">
+            Header
+          </div>
+          <div className="cnt div12">GAME WINDOW</div>
+          <div className="cnt div13">HIDDEN</div>
+          <div className="cnt div14">LOCATIONS</div>
+        </div>
+        <div className="cnt div2">CHAT</div>
+      </div>
+  )
 }
+export default MainPage;
