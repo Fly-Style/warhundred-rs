@@ -2,232 +2,193 @@
 -- and other internal bookkeeping. This file is safe to edit, any future
 -- changes will be added to existing projects as new migrations.
 
-
--- Sets up a trigger for the given table to automatically set a column called
--- `updated_at` whenever the row is modified (unless `updated_at` was included
--- in the modified columns)
---
--- # Example
---
--- ```sql
--- CREATE TABLE users (id SERIAL PRIMARY KEY, updated_at TIMESTAMP NOT NULL DEFAULT NOW());
---
--- SELECT diesel_manage_updated_at('users');
--- ```
-
 -- BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-CREATE OR REPLACE FUNCTION diesel_manage_updated_at(_tbl regclass) RETURNS VOID AS
-$$
-BEGIN
-    EXECUTE format('CREATE TRIGGER set_updated_at BEFORE UPDATE ON %s
-                    FOR EACH ROW EXECUTE PROCEDURE diesel_set_updated_at()', _tbl);
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION diesel_set_updated_at() RETURNS trigger AS
-$$
-BEGIN
-    IF (
-        NEW IS DISTINCT FROM OLD AND
-        NEW.updated_at IS NOT DISTINCT FROM OLD.updated_at
-        ) THEN
-        NEW.updated_at := current_timestamp;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE SCHEMA IF NOT EXISTS warhundred;
+-- ATTACH DATABASE 'test.db' AS warhundred;
 
 --- MAP OBJECTS ---
 
-CREATE TABLE IF NOT EXISTS warhundred.map_location
+-- BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS map_location
 (
-    id                  SERIAL PRIMARY KEY,
-    "name"              TEXT  NOT NULL,
-    "location"          POINT NOT NULL,
-    location_difficulty INT   NOT NULL DEFAULT 1,
-    movement_accel      FLOAT NOT NULL DEFAULT 1,
-    aggression_prob     FLOAT NOT NULL
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "name"              TEXT                              NOT NULL,
+    "location"          POINT                             NOT NULL,
+    location_difficulty INTEGER                           NOT NULL DEFAULT 1,
+    movement_accel      FLOAT                             NOT NULL DEFAULT 1,
+    aggression_prob     FLOAT                             NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS warhundred.town_location
+CREATE TABLE IF NOT EXISTS town_location
 (
-    id     SERIAL PRIMARY KEY,
-    "name" TEXT NOT NULL,
+    id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "name" TEXT                              NOT NULL,
     UNIQUE ("name")
 );
 
 --- GUILDS ---
 
-CREATE TABLE IF NOT EXISTS warhundred.guild
+CREATE TABLE IF NOT EXISTS guild
 (
-    id     SERIAL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    rank   INT  NOT NULL DEFAULT 1,
+    id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "name" TEXT                              NOT NULL,
+    rank   INTEGER                           NOT NULL DEFAULT 1,
     UNIQUE ("name")
 );
 
 --- PLAYERS ---
 
-CREATE TABLE IF NOT EXISTS warhundred.player
+CREATE TABLE IF NOT EXISTS player
 (
-    id                 BIGSERIAL PRIMARY KEY,
-    nickname           TEXT      NOT NULL,
-    email              TEXT      NOT NULL,
-    password           TEXT      NOT NULL,
-    last_login         TIMESTAMP NOT NULL DEFAULT NOW(),
-    last_map_location  INT       NOT NULL,
-    last_town_location INT       NOT NULL,
-    guild_id           INT,
---     last_map_location  INT       NOT NULL REFERENCES warhundred.map_location (id),
---     last_town_location INT REFERENCES warhundred.town_location (id),
---     guild_id           INT REFERENCES warhundred.guild (id),
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    nickname           TEXT                              NOT NULL,
+    email              TEXT                              NOT NULL,
+    password           TEXT                              NOT NULL,
+    last_login         TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_map_location  INTEGER                           NOT NULL,
+    last_town_location INTEGER                           NOT NULL,
+    guild_id           INTEGER REFERENCES guild (id),
+--     last_map_location  INTEGER       NOT NULL REFERENCES map_location (id),
+--     last_town_location INTEGER REFERENCES town_location (id),
     UNIQUE (nickname, email)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS player_nickname ON warhundred.player (nickname);
+CREATE UNIQUE INDEX IF NOT EXISTS player_nickname ON player (nickname);
 
-CREATE TABLE IF NOT EXISTS warhundred.player_class
+CREATE TABLE IF NOT EXISTS player_class
 (
-    class_id   INT         NOT NULL PRIMARY KEY,
+    class_id   INTEGER     NOT NULL PRIMARY KEY,
     class_name VARCHAR(16) NOT NULL
 );
 
-INSERT INTO warhundred.player_class
-VALUES
-    (0, 'no-class'),
-    (1, 'warrior'),
-    (2, 'archer'),
-    (3, 'healer'),
-    (4, 'rogue'),
-    (5, 'lancer');
+INSERT INTO player_class
+VALUES (0, 'no-class'),
+       (1, 'warrior'),
+       (2, 'archer'),
+       (3, 'healer'),
+       (4, 'rogue'),
+       (5, 'lancer');
 
-CREATE TABLE IF NOT EXISTS warhundred.player_attributes
+CREATE TABLE IF NOT EXISTS player_attributes
 (
-    id         BIGSERIAL PRIMARY KEY,
-    class_id   INT         NOT NULL REFERENCES warhundred.player_class (class_id),
-    player_id  BIGINT      NOT NULL REFERENCES warhundred.player (id),
-    strength   INT         NOT NULL DEFAULT 0,
-    dexterity  INT         NOT NULL DEFAULT 0,
-    physique   INT         NOT NULL DEFAULT 0,
-    luck       INT         NOT NULL DEFAULT 0,
-    intellect  INT         NOT NULL DEFAULT 0,
-    experience BIGINT      NOT NULL,
-    level      INT         NOT NULL DEFAULT 0,
-    valor      INT         NOT NULL DEFAULT 0,
-    rank       VARCHAR(32) NOT NULL DEFAULT 0
+    id         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    class_id   INTEGER                           NOT NULL REFERENCES player_class (class_id),
+    player_id  INTEGER                           NOT NULL REFERENCES player (id),
+    strength   INTEGER                           NOT NULL DEFAULT 0,
+    dexterity  INTEGER                           NOT NULL DEFAULT 0,
+    physique   INTEGER                           NOT NULL DEFAULT 0,
+    luck       INTEGER                           NOT NULL DEFAULT 0,
+    intellect  INTEGER                           NOT NULL DEFAULT 0,
+    experience INTEGER                           NOT NULL,
+    level      INTEGER                           NOT NULL DEFAULT 0,
+    valor      INTEGER                           NOT NULL DEFAULT 0,
+    rank       VARCHAR(32)                       NOT NULL DEFAULT 0
 );
 
 --- ITEMS ---
 
-CREATE TABLE IF NOT EXISTS warhundred.item
+CREATE TABLE IF NOT EXISTS item
 (
-    id            SERIAL PRIMARY KEY,
-    name          TEXT NOT NULL,
-    level_req     INT  NOT NULL DEFAULT 0,
-    strength_req  INT  NOT NULL DEFAULT 0,
-    dexterity_req INT  NOT NULL DEFAULT 0,
-    physique_req  INT  NOT NULL DEFAULT 0,
-    intellect_req INT  NOT NULL DEFAULT 0,
-    valor_req     INT  NOT NULL DEFAULT 0,
-    class_req     INT REFERENCES warhundred.player_class (class_id)
+    id            INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    name          TEXT                              NOT NULL,
+    level_req     INTEGER                           NOT NULL DEFAULT 0,
+    strength_req  INTEGER                           NOT NULL DEFAULT 0,
+    dexterity_req INTEGER                           NOT NULL DEFAULT 0,
+    physique_req  INTEGER                           NOT NULL DEFAULT 0,
+    intellect_req INTEGER                           NOT NULL DEFAULT 0,
+    valor_req     INTEGER                           NOT NULL DEFAULT 0,
+    class_req     INTEGER REFERENCES player_class (class_id)
 );
 
-CREATE TABLE IF NOT EXISTS warhundred.weapon_item
+CREATE TABLE IF NOT EXISTS weapon_item
 (
-    id                   SERIAL PRIMARY KEY,
-    item_id              INT NOT NULL REFERENCES warhundred.item (id),
-    action_points_to_use INT NOT NULL DEFAULT 2,
-    basic_damage         INT NOT NULL DEFAULT 0,
-    "range"              INT NOT NULL DEFAULT 1
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    item_id              INTEGER                           NOT NULL REFERENCES item (id),
+    action_points_to_use INTEGER                           NOT NULL DEFAULT 2,
+    basic_damage         INTEGER                           NOT NULL DEFAULT 0,
+    "range"              INTEGER                           NOT NULL DEFAULT 1
 );
 
-CREATE TABLE IF NOT EXISTS warhundred.gear_item
+CREATE TABLE IF NOT EXISTS gear_item
 (
-    id      SERIAL PRIMARY KEY,
-    item_id INT NOT NULL REFERENCES warhundred.item (id)
+    id      INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    item_id INTEGER                           NOT NULL REFERENCES item (id)
 );
 
-CREATE TABLE IF NOT EXISTS warhundred.battle_consumable_item
+CREATE TABLE IF NOT EXISTS battle_consumable_item
 (
-    id      SERIAL PRIMARY KEY,
-    item_id INT NOT NULL REFERENCES warhundred.item (id)
+    id      INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    item_id INTEGER                           NOT NULL REFERENCES item (id)
 );
 
-CREATE TABLE IF NOT EXISTS warhundred.non_battle_consumable_item
+CREATE TABLE IF NOT EXISTS non_battle_consumable_item
 (
-    id      SERIAL PRIMARY KEY,
-    item_id INT NOT NULL REFERENCES warhundred.item (id)
+    id      INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    item_id INTEGER                           NOT NULL REFERENCES item (id)
 );
 
 --- INVENTORY ---
 
-CREATE TABLE IF NOT EXISTS warhundred.player_inventory
+CREATE TABLE IF NOT EXISTS player_inventory
 (
-    id        SERIAL PRIMARY KEY,
-    player_id BIGINT  NOT NULL REFERENCES warhundred.player (id),
-    item_id   INT     NOT NULL REFERENCES warhundred.item (id),
-    amount    INT     NOT NULL DEFAULT 1,
-    weight    REAL    NOT NULL DEFAULT 0,
-    equipped  BOOLEAN NOT NULL DEFAULT FALSE
+    id        INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    player_id INTEGER                           NOT NULL REFERENCES player (id),
+    item_id   INTEGER                           NOT NULL REFERENCES item (id),
+    amount    INTEGER                           NOT NULL DEFAULT 1,
+    weight    REAL                              NOT NULL DEFAULT 0,
+    equipped  BOOLEAN                           NOT NULL DEFAULT FALSE
 );
 
 --- BOTS ---
 
-CREATE TABLE IF NOT EXISTS warhundred.bot
+CREATE TABLE IF NOT EXISTS bot
 (
-    id            SERIAL PRIMARY KEY,
-    weapon_id     INT  NOT NULL REFERENCES warhundred.weapon_item (id),
-    name          TEXT NOT NULL,
-    level         INT  NOT NULL DEFAULT 1,
-    action_points INT  NOT NULL DEFAULT 6
+    id            INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    weapon_id     INTEGER                           NOT NULL REFERENCES weapon_item (id),
+    name          TEXT                              NOT NULL,
+    level         INTEGER                           NOT NULL DEFAULT 1,
+    action_points INTEGER                           NOT NULL DEFAULT 6
 );
-
---- MISC ---
-
-CREATE FUNCTION read_only() RETURNS TRIGGER AS
-$$
-BEGIN
-    RAISE EXCEPTION 'Cannot modify read-only table.';
-END;
-$$
-    LANGUAGE plpgsql;
-
-CREATE TRIGGER read_only_trigger
-    BEFORE INSERT OR UPDATE OR DELETE
-    ON warhundred.player_class
-EXECUTE PROCEDURE read_only();
 
 --- BATTLE ---
 
-CREATE TYPE warhundred.WINNER AS ENUM ('en', 'fr', 'bots');
+CREATE TABLE factions
+(
+    id   INTEGER PRIMARY KEY NOT NULL,
+    name VARCHAR(3)          NOT NULL
+);
+
+INSERT INTO factions
+VALUES (0, 'en'),
+       (1, 'fr'),
+       (2, 'bots');
+
 
 -- Maximum - 32 players/bots per battle are allowed. Battle record will be stored AFTER the battle is finished.
-CREATE TABLE warhundred.battle
+CREATE TABLE battle
 (
-    id         BIGSERIAL PRIMARY KEY,
-    start_time TIMESTAMP         NOT NULL,
-    end_time   TIMESTAMP         NOT NULL,
-    winner     warhundred.WINNER NOT NULL
+    id         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    start_time TIMESTAMP                         NOT NULL,
+    end_time   TIMESTAMP                         NOT NULL,
+    winner     INTEGER REFERENCES factions (id)  NOT NULL
 );
 
-CREATE TABLE warhundred.battle_participant
+CREATE TABLE battle_participant
 (
-    battle_id      BIGINT PRIMARY KEY NOT NULL REFERENCES warhundred.battle (id),
-    player_id      BIGINT REFERENCES warhundred.player (id),
-    bot_id         INT REFERENCES warhundred.bot (id),
-    outcome_damage INT                NOT NULL DEFAULT 0,
-    income_damage  INT                NOT NULL DEFAULT 0,
-    gained_exp     INT                NOT NULL DEFAULT 0,
-    gained_valor   BOOLEAN            NOT NULL
+    battle_id      INTEGER PRIMARY KEY            NOT NULL REFERENCES battle (id),
+    player_id      INTEGER REFERENCES player (id) NOT NULL,
+    bot_id         INTEGER REFERENCES bot (id)    NOT NULL,
+    outcome_damage INTEGER                        NOT NULL DEFAULT 0,
+    income_damage  INTEGER                        NOT NULL DEFAULT 0,
+    gained_exp     INTEGER                        NOT NULL DEFAULT 0,
+    gained_valor   BOOLEAN                        NOT NULL
 );
 
-CREATE TABLE warhundred.battle_log
+CREATE TABLE battle_log
 (
-    id  BIGINT PRIMARY KEY REFERENCES warhundred.battle (id),
-    log TEXT NOT NULL
+    id  INTEGER PRIMARY KEY REFERENCES battle (id) NOT NULL,
+    log TEXT                                       NOT NULL
 );
 
 -- COMMIT TRANSACTION;

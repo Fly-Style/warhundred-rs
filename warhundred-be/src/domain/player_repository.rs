@@ -1,18 +1,20 @@
 use crate::error::PlayerError;
 use axum_login::AuthUser;
-use deadpool_diesel::postgres::Pool;
+use deadpool_diesel::sqlite::Pool;
 use diesel::prelude::*;
 use std::fmt::Debug;
 
 #[derive(Queryable, Selectable, Clone)]
-#[diesel(table_name = crate::schema::warhundred::player)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[diesel(table_name = crate::schema::player)]
+// #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Player {
-    pub id: i64,
+    // TODO: i32 -> i64 should be changed in the future.
+    //  The only reason it is done this way is that diesel maps int to i32.
+    pub id: i32,
     pub nickname: String,
     pub email: String,
     pub password: String,
-    pub last_login: std::time::SystemTime,
+    pub last_login: String,
     pub last_map_location: i32,
     pub last_town_location: i32,
     pub guild_id: Option<i32>,
@@ -46,13 +48,13 @@ impl AuthUser for Player {
 }
 
 #[derive(Insertable, Debug)]
-#[diesel(table_name = crate::schema::warhundred::player)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[diesel(table_name = crate::schema::player)]
+// #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct InsertablePlayer {
     pub nickname: String,
     pub email: String,
     pub password: String,
-    pub last_login: std::time::SystemTime,
+    pub last_login: String,
     pub last_map_location: i32,
     pub last_town_location: i32,
     pub guild_id: Option<i32>,
@@ -68,7 +70,7 @@ pub(crate) async fn get_player_by_nick(
     pool: &Pool,
     nick: String,
 ) -> Result<Option<Player>, PlayerError> {
-    use crate::schema::warhundred::player::dsl::*;
+    use crate::schema::player::dsl::*;
     let conn = pool.get().await.unwrap();
     let _nick = nick.clone();
 
@@ -92,7 +94,7 @@ pub async fn register_player(
     pool: &Pool,
     new_player: InsertablePlayer,
 ) -> Result<Player, PlayerError> {
-    use crate::schema::warhundred::player::dsl::*;
+    use crate::schema::player::dsl::*;
 
     println!("Registering player: {:?}", new_player);
 

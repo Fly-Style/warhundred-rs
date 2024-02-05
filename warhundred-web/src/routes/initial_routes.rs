@@ -60,7 +60,7 @@ mod tests {
     use crate::routes::initial_routes::root_router;
     use axum::body::Body;
     use axum::http::{Request, StatusCode};
-    use deadpool_diesel::postgres::{Manager, Pool};
+    use deadpool_diesel::sqlite::{Manager, Pool};
     use serde_json::{json, Value};
     use std::env;
     use axum::http;

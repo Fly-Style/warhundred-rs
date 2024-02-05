@@ -1,7 +1,7 @@
 mod routes;
 
 use crate::routes::initial_routes::root_router;
-use deadpool_diesel::postgres::{Manager, Pool};
+use deadpool_diesel::sqlite::{Manager, Pool};
 use dotenvy::dotenv;
 use std::env;
 use tokio::net::TcpListener;

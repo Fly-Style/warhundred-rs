@@ -2,7 +2,7 @@ use crate::domain::player_repository::{get_player_by_nick, Credentials, Player};
 use crate::error::PlayerError;
 use axum::async_trait;
 use axum_login::{AuthnBackend, UserId};
-use deadpool_diesel::postgres::Pool;
+use deadpool_diesel::sqlite::Pool;
 
 #[derive(Clone)]
 pub struct AppState {

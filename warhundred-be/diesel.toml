@@ -3,7 +3,7 @@
 
 [print_schema]
 file = "src/schema.rs"
-schema = "warhundred"
+# schema = "main"
 custom_type_derives = ["diesel::query_builder::QueryId", "std::fmt::Debug"]
 
 [migrations_directory]
