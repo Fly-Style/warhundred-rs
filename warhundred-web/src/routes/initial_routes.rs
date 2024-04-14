@@ -5,6 +5,7 @@ use argon2::{Argon2, PasswordHasher};
 use axum::extract::State;
 use axum::routing::post;
 use axum::{Json, Router};
+use chrono::prelude::Utc;
 use error::PlayerError;
 use tower_http::services::ServeDir;
 use warhundred_be::app_state::AppState;
@@ -30,7 +31,7 @@ pub(crate) async fn register(
         nickname: new_player.username,
         email: new_player.email,
         password: hash_password(new_player.password.as_bytes()),
-        last_login: std::time::SystemTime::now(),
+        last_login: Utc::now().to_string(),
         last_map_location: 0,
         last_town_location: 0,
         guild_id: None,
@@ -38,7 +39,7 @@ pub(crate) async fn register(
 
     match player_repository::register_player(&state.pool, new_player).await {
         Ok(player) => Ok(Json(RegisterPlayerResponse {
-            id: player.id,
+            id: player.id as i64,
             nickname: player.nickname,
             registered: true,
         })),
@@ -64,11 +65,12 @@ mod tests {
     use serde_json::{json, Value};
     use std::env;
     use axum::http;
+    use axum::response::Response;
     use tower::ServiceExt;
     use warhundred_be::app_state::AppState;
 
     // #[tokio::test]
-    async fn test_register() {
+    async fn test_register_ok() {
         // TODO: mock the database
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let manager = Manager::new(database_url, deadpool_diesel::Runtime::Tokio1);
@@ -78,7 +80,7 @@ mod tests {
 
         let app = root_router().with_state(state);
 
-        let response = app
+        let response: Response = app
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
@@ -90,7 +92,7 @@ mod tests {
                             "email": "a@a.com",
                             "password": "pwd"
                         }))
-                        .unwrap(),
+                            .unwrap(),
                     ))
                     .unwrap(),
             )
@@ -99,8 +101,11 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::OK);
 
-        let body = response.into_body().collect().await.unwrap().to_bytes();
-        let body: Value = serde_json::from_slice(&body).unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX);
+        
+        // TODO: use assert_matches!, when become stable.
+        
+        let body: Value = serde_json::from_slice(body.await.unwrap().as_ref()).unwrap();
         assert_eq!(
             body,
             json!({
