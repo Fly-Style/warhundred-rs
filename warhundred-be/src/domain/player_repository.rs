@@ -66,10 +66,7 @@ pub struct Credentials {
     pub password: String,
 }
 
-pub(crate) async fn get_player_by_nick(
-    pool: &Pool,
-    nick: String,
-) -> Result<Option<Player>, PlayerError> {
+pub async fn get_player_by_nick(pool: &Pool, nick: String) -> Result<Player, PlayerError> {
     use crate::schema::player::dsl::*;
     let conn = pool.get().await.unwrap();
     let _nick = nick.clone();
@@ -83,7 +80,7 @@ pub(crate) async fn get_player_by_nick(
 
     match res {
         Ok(qr) => match qr {
-            Ok(res) => Ok(Some(res)),
+            Ok(res) => Ok(res),
             Err(_) => Err(PlayerError::NotFound(_nick)),
         },
         Err(_) => Err(PlayerError::NotFound(_nick)),

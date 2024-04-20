@@ -19,18 +19,22 @@ impl AuthnBackend for AppState {
         &self,
         Credentials { username, password }: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        let user = get_player_by_nick(&self.pool, username).await?;
+        let result = get_player_by_nick(&self.pool, username).await;
 
-        match user {
-            Some(player) => match password_auth::verify_password(password, &player.password) {
+        match result {
+            Ok(player) => match password_auth::verify_password(password, &player.password) {
                 Ok(_) => Ok(Some(player)),
-                Err(_) => Ok(None),
+                Err(_) => Err(PlayerError::NotFound(player.nickname)),
             },
-            None => Ok(None),
+            Err(e) => Err(e),
         }
     }
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
-        Ok(get_player_by_nick(&self.pool, user_id.clone()).await?)
+        let result = get_player_by_nick(&self.pool, user_id.to_string()).await;
+        match result {
+            Ok(player) => Ok(Some(player)),
+            Err(e) => Err(e),
+        }
     }
 }

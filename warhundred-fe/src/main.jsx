@@ -14,7 +14,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/*TODO: do auth with JWT and put it into the storage*/}
             <Route path="/" element={<EntryPage/>}/>
             <Route element={<RequireAuth/>}>
             <Route path="/" element={<MainPage/>}/>

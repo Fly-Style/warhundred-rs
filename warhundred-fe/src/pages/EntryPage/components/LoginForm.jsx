@@ -1,21 +1,22 @@
 import {useState} from "react";
-import axios from "axios";
+import {useNavigate} from "react-router-dom";
+import {useAuth} from "../../../context/AuthProvider.jsx";
 import "../EntryPage.css"
-import {handleFormChange} from "../../../util/utils.js";
 
 export const LoginForm = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: ""
-  });
+  const [username, setUsername] = useState(null);
+  const [pwd, setPwd] = useState(null);
 
-  const submitHandler = () => {
-    event.preventDefault();
-    axios.post("/login", formData, {
-      headers: {'Content-Type': 'application/json',}
-    })
-      .then(res => alert(res))
-      .catch(err => console.log(err));
+  const auth = useAuth();
+  const nav = useNavigate();
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+
+    auth.login(username, pwd);
+    // Note: we navigate to the root, because we should be authenticated and auth provider must have user setup.
+    // TODO: JWT, JWT!
+    nav("/", {replace: true});
   }
 
   return (
@@ -28,7 +29,7 @@ export const LoginForm = () => {
             name="username"
             value={formData.username}
             className="entry-page__input"
-            onChange={(e) => handleFormChange(e, setFormData)}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </label>
         <label>
@@ -38,7 +39,7 @@ export const LoginForm = () => {
             name="password"
             value={formData.password}
             className="entry-page__input"
-            onChange={(e) => handleFormChange(e, setFormData)}
+            onChange={(e) => setPwd(e.target.value)}
           />
         </label>
         <input

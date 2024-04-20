@@ -1,16 +1,20 @@
-use crate::routes::{RegisterPlayerRequest, RegisterPlayerResponse};
+use std::future::Future;
+use crate::routes::{
+    LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
+};
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
 use axum::extract::State;
 use axum::routing::post;
 use axum::{Json, Router};
+use axum_login::AuthnBackend;
 use chrono::prelude::Utc;
 use error::PlayerError;
 use tower_http::services::ServeDir;
 use warhundred_be::app_state::AppState;
 use warhundred_be::domain::player_repository;
-use warhundred_be::domain::player_repository::InsertablePlayer;
+use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer, Player};
 use warhundred_be::error;
 use warhundred_be::utils::json_extractor::JsonExtractor;
 
@@ -18,7 +22,7 @@ pub fn root_router() -> Router<AppState> {
     Router::new()
         .route_service("/", ServeDir::new("public"))
         .route("/register", post(register))
-    // .route("/login", post(login))
+        .route("/login", post(login))
 }
 
 pub(crate) async fn register(
@@ -43,7 +47,36 @@ pub(crate) async fn register(
             nickname: player.nickname,
             registered: true,
         })),
-        Err(e) => Err(e),
+        Err(_) => Ok(Json(RegisterPlayerResponse {
+            id: -1i64,
+            nickname: String::from(""),
+            registered: false,
+        }))
+    }
+}
+
+pub(crate) async fn login(
+    State(state): State<AppState>,
+    JsonExtractor(extractor): JsonExtractor<LoginPlayerRequest>,
+) -> Result<Json<LoginPlayerResponse>, PlayerError> {
+    println!("Authenticating player: {:?}", extractor.username);
+
+    let cred = Credentials {
+        username: extractor.username,
+        password: extractor.password,
+    };
+
+    let auth = state.authenticate(cred).await?;
+    
+    match auth {
+        Some(player) => Ok(Json(LoginPlayerResponse {
+            nickname: player.nickname,
+            logged_in: true,
+        })),
+        None => Ok(Json(LoginPlayerResponse {
+            nickname: String::from(""),
+            logged_in: false,
+        }))
     }
 }
 
@@ -60,12 +93,12 @@ fn hash_password(pwd: &[u8]) -> String {
 mod tests {
     use crate::routes::initial_routes::root_router;
     use axum::body::Body;
+    use axum::http;
     use axum::http::{Request, StatusCode};
+    use axum::response::Response;
     use deadpool_diesel::sqlite::{Manager, Pool};
     use serde_json::{json, Value};
     use std::env;
-    use axum::http;
-    use axum::response::Response;
     use tower::ServiceExt;
     use warhundred_be::app_state::AppState;
 
@@ -102,9 +135,9 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         let body = axum::body::to_bytes(response.into_body(), usize::MAX);
-        
+
         // TODO: use assert_matches!, when become stable.
-        
+
         let body: Value = serde_json::from_slice(body.await.unwrap().as_ref()).unwrap();
         assert_eq!(
             body,

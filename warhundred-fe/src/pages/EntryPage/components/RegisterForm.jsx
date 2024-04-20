@@ -1,24 +1,21 @@
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 import axios from "axios";
 import "../EntryPage.css"
 import {handleFormChange} from "../../../util/utils.js";
 
 export const RegisterForm = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: ""
-  });
+  const [formData, setFormData] = useState({username: "", email: "", password: ""});
+  const nav = useNavigate();
+
 
   const submitHandler = () => {
     event.preventDefault();
-    console.log(formData);
-    axios.post(`${import.meta.env.SERVER_URL}/register`, formData, {
-    // axios.post("/register", formData, {
+    axios.post(`${import.meta.env.VITE_SERVER_URL}/register`, formData, {
       headers: {'Content-Type': 'application/json',}
-    })
-      .then(res => alert(res))
-      .catch(err => console.log(err));
+    }).then(res => {
+      alert("Register is successful.")
+    }).catch(err => console.log(err));
   }
 
   return (

@@ -15,3 +15,15 @@ pub struct RegisterPlayerResponse {
     nickname: String,
     registered: bool,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct LoginPlayerRequest {
+    username: String,
+    password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoginPlayerResponse {
+    nickname: String,
+    logged_in: bool,
+}
