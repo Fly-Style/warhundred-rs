@@ -12,16 +12,16 @@ import RequireAuth from "./util/components/RequireAuth.jsx";
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <BrowserRouter>
-        <AuthProvider>
+        {/*<AuthProvider>*/}
           <Routes>
             {/*TODO: do auth with JWT and put it into the storage*/}
-            <Route path="/" element={<EntryPage/>}/>
-            <Route element={<RequireAuth/>}>
-              <Route path="/" element={<MainPage/>}/>
-            </Route>
+            {/*<Route path="/" element={<EntryPage/>}/>*/}
+            {/*<Route element={<RequireAuth/>}>*/}
+            <Route path="/" element={<MainPage/>}/>
+            {/*</Route>*/}
             <Route path="*" element={<Missing/>}/>
           </Routes>
-        </AuthProvider>
+        {/*</AuthProvider>*/}
       </BrowserRouter>
     </React.StrictMode>
 )

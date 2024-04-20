@@ -1,44 +1,82 @@
 /*noinspection CssInvalidPropertyValue*/
 #root {
-    max-width: -webkit-fill-available;
-    max-height: -webkit-fill-available;
-    padding: 0;
-    margin: 0;
-    background: #fffff0;
+  max-width: -webkit-fill-available;
+  max-height: -webkit-fill-available;
+  padding: 0;
+  margin: 0;
+  background: #fffff0;
 }
 
 .parent {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 3fr 1fr;
-    grid-column-gap: 0;
-    grid-row-gap: 0;
-    width: 100vw;
-    height: 100vh;
+  display: grid;
+  grid-template-columns: 4.5fr 1fr;
+  grid-template-rows: 1fr 25fr 10fr;
+  grid-column-gap: 0;
+  grid-row-gap: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
 }
 
 .cnt {
-    border: 1px solid black;
+  border: 1px solid black;
 }
 
-.div1 {
-    grid-area: 1 / 1 / 2 / 2;
-}
-.div2 {
-    grid-area: 2 / 1 / 3 / 2;
+.header { grid-area: 1 / 1 / 2 / 2; }
+.game-window-wrap { grid-area: 2 / 1 / 3 / 2; }
+.hidden-area-wrap { grid-area: 1 / 2 / 2 / 3; }
+.locations-list-wrap { grid-area: 2 / 2 / 3 / 3; }
+
+.zone-players-wrapper {
+  grid-area: 3 / 2 / 4 / 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  border: 1px solid black;
 }
 
-.subgrid-parent {
-        display: grid;
-        grid-template-columns: 6fr 1fr;
-        grid-template-rows: 1fr 10fr;
-        grid-column-gap: 0;
-        grid-row-gap: 0;
+.zone-player-box {
+  display: flex;
+  flex-direction: row;
+  margin-left: 0.25rem;
+  margin-bottom: 0.1rem;
 }
 
-.div11 {
-    grid-area: 1 / 1 / 2 / 2;
+/* Chat component */
+.chat-parent {
+  grid-area: 3 / 1 / 4 / 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: scroll;
 }
-.div12 {
-    grid-area: 2 / 1 / 3 / 2;
+
+/*noinspection CssInvalidPropertyValue*/
+.chat-history {
+  display: flex;
+  flex-grow: 3;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow: scroll;
+  margin-left: 1rem;
+  max-width: -webkit-fill-available;
+}
+
+/*noinspection CssInvalidPropertyValue*/
+.chat-input-wrap {
+  display: flex;
+  flex-direction: row;
+  margin: 0.25em;
+}
+
+/*noinspection CssInvalidPropertyValue*/
+.chat-input {
+  flex-grow: 2;
+  background: antiquewhite;
+}
+
+.chat-submit {
+  min-width: 5%;
 }
