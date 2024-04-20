@@ -1,22 +1,20 @@
-use std::future::Future;
+use axum::{Json, Router};
+use axum::extract::State;
+use axum::routing::post;
+use axum_login::AuthnBackend;
+use chrono::prelude::Utc;
+use tower_http::services::ServeDir;
+
+use error::PlayerError;
+use warhundred_be::app_state::AppState;
+use warhundred_be::domain::player_repository;
+use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer};
+use warhundred_be::error;
+use warhundred_be::utils::json_extractor::JsonExtractor;
+
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
 };
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::SaltString;
-use argon2::{Argon2, PasswordHasher};
-use axum::extract::State;
-use axum::routing::post;
-use axum::{Json, Router};
-use axum_login::AuthnBackend;
-use chrono::prelude::Utc;
-use error::PlayerError;
-use tower_http::services::ServeDir;
-use warhundred_be::app_state::AppState;
-use warhundred_be::domain::player_repository;
-use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer, Player};
-use warhundred_be::error;
-use warhundred_be::utils::json_extractor::JsonExtractor;
 
 pub fn root_router() -> Router<AppState> {
     Router::new()
@@ -34,7 +32,7 @@ pub(crate) async fn register(
     let new_player = InsertablePlayer {
         nickname: new_player.username,
         email: new_player.email,
-        password: hash_password(new_player.password.as_bytes()),
+        password: password_auth::generate_hash(new_player.password.as_bytes()),
         last_login: Utc::now().to_string(),
         last_map_location: 0,
         last_town_location: 0,
@@ -47,11 +45,7 @@ pub(crate) async fn register(
             nickname: player.nickname,
             registered: true,
         })),
-        Err(_) => Ok(Json(RegisterPlayerResponse {
-            id: -1i64,
-            nickname: String::from(""),
-            registered: false,
-        }))
+        Err(e) => Err(e)
     }
 }
 
@@ -59,48 +53,44 @@ pub(crate) async fn login(
     State(state): State<AppState>,
     JsonExtractor(extractor): JsonExtractor<LoginPlayerRequest>,
 ) -> Result<Json<LoginPlayerResponse>, PlayerError> {
-    println!("Authenticating player: {:?}", extractor.username);
+    let cred = Credentials { username: extractor.username.clone(), password: extractor.password };
+    let auth_result = state.authenticate(cred).await;
 
-    let cred = Credentials {
-        username: extractor.username,
-        password: extractor.password,
-    };
+    match auth_result {
+        Ok(player_opt) =>
+            match player_opt {
+                Some(player) => {
+                    println!("Authenticating player: {:?} - success", extractor.username);
+                    Ok(Json(LoginPlayerResponse {
+                        nickname: player.nickname,
+                        logged_in: true,
+                    }))
+                }
 
-    let auth = state.authenticate(cred).await?;
-    
-    match auth {
-        Some(player) => Ok(Json(LoginPlayerResponse {
-            nickname: player.nickname,
-            logged_in: true,
-        })),
-        None => Ok(Json(LoginPlayerResponse {
-            nickname: String::from(""),
-            logged_in: false,
-        }))
+                None => {
+                    println!("Player was found in database, but cannot unwrap Option.");
+                    Err(PlayerError::NotFound(extractor.username))
+                }
+            }
+        Err(e) => Err(e)
     }
-}
-
-fn hash_password(pwd: &[u8]) -> String {
-    let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-    let hash = argon2.hash_password(pwd, &salt);
-
-    assert!(hash.is_ok(), "Failed to hash password");
-    hash.unwrap().to_string()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::routes::initial_routes::root_router;
+    use std::env;
+
     use axum::body::Body;
     use axum::http;
     use axum::http::{Request, StatusCode};
     use axum::response::Response;
     use deadpool_diesel::sqlite::{Manager, Pool};
     use serde_json::{json, Value};
-    use std::env;
     use tower::ServiceExt;
+
     use warhundred_be::app_state::AppState;
+
+    use crate::routes::initial_routes::root_router;
 
     // #[tokio::test]
     async fn test_register_ok() {

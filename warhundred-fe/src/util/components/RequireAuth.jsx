@@ -3,7 +3,7 @@ import EntryPage from "../../pages/EntryPage/EntryPage.jsx";
 import {useAuth} from "../../context/AuthProvider.jsx";
 
 export const RequireAuth = () => {
-  const {auth} = useAuth();
+  const auth = useAuth();
   return (
       auth?.user
           ? <MainPage/>

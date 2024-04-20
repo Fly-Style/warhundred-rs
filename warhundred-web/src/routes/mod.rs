@@ -25,5 +25,5 @@ pub struct LoginPlayerRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginPlayerResponse {
     nickname: String,
-    logged_in: bool,
+    logged_in: bool
 }

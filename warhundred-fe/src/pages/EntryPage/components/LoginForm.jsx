@@ -14,9 +14,6 @@ export const LoginForm = () => {
     e.preventDefault();
 
     auth.login(username, pwd);
-    // Note: we navigate to the root, because we should be authenticated and auth provider must have user setup.
-    // TODO: JWT, JWT!
-    nav("/", {replace: true});
   }
 
   return (
@@ -27,9 +24,9 @@ export const LoginForm = () => {
           <input
             type="text"
             name="username"
-            value={formData.username}
             className="entry-page__input"
             onChange={(e) => setUsername(e.target.value)}
+            required
           />
         </label>
         <label>
@@ -37,9 +34,9 @@ export const LoginForm = () => {
           <input
             type="password"
             name="password"
-            value={formData.password}
             className="entry-page__input"
             onChange={(e) => setPwd(e.target.value)}
+            required
           />
         </label>
         <input

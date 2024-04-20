@@ -1686,7 +1686,6 @@ dependencies = [
 name = "warhundred-web"
 version = "0.1.0"
 dependencies = [
- "argon2",
  "axum",
  "axum-login",
  "axum-macros",
@@ -1695,6 +1694,7 @@ dependencies = [
  "deadpool-diesel",
  "dotenvy",
  "mime",
+ "password-auth",
  "serde",
  "serde_json",
  "tokio",

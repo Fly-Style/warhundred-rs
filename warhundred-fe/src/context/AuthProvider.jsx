@@ -27,7 +27,6 @@ function useProvideAuth() {
       {"username": username, "password": password},
       {headers: {'Content-Type': 'application/json'}}
     ).then(res => {
-      setIsLoading(false);
       if (res.status === HttpStatusCode.Ok) {
         setUser(username);
       } else {
