@@ -6,11 +6,11 @@ use chrono::prelude::Utc;
 use tower_http::services::ServeDir;
 
 use error::PlayerError;
-use warhundred_be::app_state::AppState;
-use warhundred_be::domain::player_repository;
-use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer};
-use warhundred_be::error;
-use warhundred_be::utils::json_extractor::JsonExtractor;
+use warhundred_app::app_state::AppState;
+use warhundred_app::domain::player_repository;
+use warhundred_app::domain::player_repository::{Credentials, InsertablePlayer};
+use warhundred_app::error;
+use warhundred_app::utils::json_extractor::JsonExtractor;
 
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
@@ -88,7 +88,7 @@ mod tests {
     use serde_json::{json, Value};
     use tower::ServiceExt;
 
-    use warhundred_be::app_state::AppState;
+    use warhundred_app::app_state::AppState;
 
     use crate::routes::initial_routes::root_router;
 

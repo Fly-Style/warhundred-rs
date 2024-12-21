@@ -1,27 +1,18 @@
 [package]
-name = "warhundred-be"
+name = "warhundred-app"
 version = "0.1.0"
 authors = ["Sasha Syrotenko <alex.syrotenko.official@gmail.com>"]
 edition = "2021"
 rust-version = "1.82"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-trait = { workspace = true }
 axum = { workspace = true }
 axum-login = { workspace = true }
-dotenvy = { workspace = true }
+axum-macros = { workspace = true }
 deadpool-diesel = { workspace = true }
-chrono = "0.4.37"
-mime = "0.3.17"
+diesel = { workspace = true }
 password-auth = { workspace = true }
 serde = {workspace = true}
 serde_json = { workspace = true }
-tracing-subscriber = "0.3.18"
-tokio = { version = "1", features = ["full"] }
-tower = { version = "0.5", features = ["util"] }
-tower-http = { version = "0.6", features = ["fs", "trace", "cors"] }
-tracing = "0.1.40"
-# Local modules
-warhundred-app = { path = "../warhundred-app" }
-warhundred-game-grid = { path = "../warhundred-game-grid" }
