@@ -133,6 +133,19 @@ diesel::table! {
     player_class (class_id) {
         class_id -> Integer,
         class_name -> Text,
+        class_spec_one_name -> Nullable<Text>,
+        class_spec_two_name -> Nullable<Text>,
+        class_spec_tree_name -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    player_experience_table (exp) {
+        exp -> Integer,
+        up -> Integer,
+        level -> Integer,
+        attrs -> Integer,
+        money -> Integer,
     }
 }
 
@@ -144,6 +157,19 @@ diesel::table! {
         amount -> Integer,
         weight -> Float,
         equipped -> Bool,
+    }
+}
+
+diesel::table! {
+    player_rank_table (id) {
+        id -> Integer,
+        valor -> Integer,
+        min_level -> Integer,
+        rank_name_EN -> Text,
+        rank_name_FR -> Text,
+        rank_name_UA -> Text,
+        rank_pic_url_EN -> Nullable<Text>,
+        rank_pic_url_FR -> Nullable<Text>,
     }
 }
 
@@ -196,7 +222,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     player,
     player_attributes,
     player_class,
+    player_experience_table,
     player_inventory,
+    player_rank_table,
     town_location,
     weapon_item,
 );

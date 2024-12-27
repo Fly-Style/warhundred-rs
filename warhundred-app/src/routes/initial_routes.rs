@@ -1,16 +1,15 @@
-use axum::{Json, Router};
 use axum::extract::State;
 use axum::routing::post;
+use axum::{Json, Router};
 use axum_login::AuthnBackend;
 use chrono::prelude::Utc;
 use tower_http::services::ServeDir;
 
 use error::PlayerError;
-use warhundred_app::app_state::AppState;
-use warhundred_app::domain::player_repository;
-use warhundred_app::domain::player_repository::{Credentials, InsertablePlayer};
-use warhundred_app::error;
-use warhundred_app::utils::json_extractor::JsonExtractor;
+use warhundred_be::app_state::AppState;
+use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer, Player};
+use warhundred_be::error;
+use warhundred_be::utils::json_extractor::JsonExtractor;
 
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
@@ -39,13 +38,13 @@ pub(crate) async fn register(
         guild_id: None,
     };
 
-    match player_repository::register_player(&state.pool, new_player).await {
+    match Player::register_player(&state.pool, new_player).await {
         Ok(player) => Ok(Json(RegisterPlayerResponse {
             id: player.id as i64,
             nickname: player.nickname,
             registered: true,
         })),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 
@@ -53,55 +52,53 @@ pub(crate) async fn login(
     State(state): State<AppState>,
     JsonExtractor(extractor): JsonExtractor<LoginPlayerRequest>,
 ) -> Result<Json<LoginPlayerResponse>, PlayerError> {
-    let cred = Credentials { username: extractor.username.clone(), password: extractor.password };
+    let cred = Credentials {
+        username: extractor.username.clone(),
+        password: extractor.password,
+    };
     let auth_result = state.authenticate(cred).await;
 
     match auth_result {
-        Ok(player_opt) =>
-            match player_opt {
-                Some(player) => {
-                    println!("Authenticating player: {:?} - success", extractor.username);
-                    Ok(Json(LoginPlayerResponse {
-                        nickname: player.nickname,
-                        logged_in: true,
-                    }))
-                }
-
-                None => {
-                    println!("Player was found in database, but cannot unwrap Option.");
-                    Err(PlayerError::NotFound(extractor.username))
-                }
+        Ok(player_opt) => match player_opt {
+            Some(player) => {
+                println!("Authenticating player: {:?} - success", extractor.username);
+                Ok(Json(LoginPlayerResponse {
+                    nickname: player.nickname,
+                    logged_in: true,
+                }))
             }
-        Err(e) => Err(e)
+
+            None => {
+                println!("Player was found in database, but cannot unwrap Option.");
+                Err(PlayerError::NotFound(extractor.username))
+            }
+        },
+        Err(e) => Err(e),
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "it_test"))]
 mod tests {
-    use std::env;
-
     use axum::body::Body;
     use axum::http;
     use axum::http::{Request, StatusCode};
     use axum::response::Response;
-    use deadpool_diesel::sqlite::{Manager, Pool};
-    use serde_json::{json, Value};
+    use deadpool_diesel::{Manager, Pool};
+    use serde_json::Value;
+    use std::env;
     use tower::ServiceExt;
+    use warhundred_be::app_state::AppState;
 
-    use warhundred_app::app_state::AppState;
-
-    use crate::routes::initial_routes::root_router;
-
-    // #[tokio::test]
+    #[tokio::test]
+    #[cfg(all(test, feature = "it_test"))]
     async fn test_register_ok() {
-        // TODO: mock the database
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let manager = Manager::new(database_url, deadpool_diesel::Runtime::Tokio1);
         let pool = Pool::builder(manager).build().unwrap();
 
         let state = AppState { pool };
 
-        let app = root_router().with_state(state);
+        let app = crate::routes::initial_routes::root_router().with_state(state);
 
         let response: Response = app
             .oneshot(
@@ -110,12 +107,12 @@ mod tests {
                     .uri("/register")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(
-                        serde_json::to_vec(&json!({
+                        serde_json::to_vec(&serde_json::json!({
                             "username": "a",
                             "email": "a@a.com",
                             "password": "pwd"
                         }))
-                            .unwrap(),
+                        .unwrap(),
                     ))
                     .unwrap(),
             )
@@ -131,7 +128,7 @@ mod tests {
         let body: Value = serde_json::from_slice(body.await.unwrap().as_ref()).unwrap();
         assert_eq!(
             body,
-            json!({
+            serde_json::json!({
                 "data": [1, 2, 3, 4]
             })
         );

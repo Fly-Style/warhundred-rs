@@ -1,4 +1,4 @@
-use crate::domain::player_repository::{get_player_by_nick, Credentials, Player};
+use crate::domain::player_repository::{Credentials, Player};
 use crate::error::PlayerError;
 use axum::async_trait;
 use axum_login::{AuthnBackend, UserId};
@@ -19,7 +19,7 @@ impl AuthnBackend for AppState {
         &self,
         Credentials { username, password }: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        let result = get_player_by_nick(&self.pool, username).await;
+        let result = Player::get_player_by_nick(&self.pool, username).await;
         match result {
             Ok(player) => {
                 match password_auth::verify_password(password, &*player.password) {
@@ -32,7 +32,7 @@ impl AuthnBackend for AppState {
     }
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
-        let result = get_player_by_nick(&self.pool, user_id.to_string()).await;
+        let result = Player::get_player_by_nick(&self.pool, user_id.to_string()).await;
         match result {
             Ok(player) => Ok(Some(player)),
             Err(e) => Err(e),

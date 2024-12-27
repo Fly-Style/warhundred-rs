@@ -10,8 +10,8 @@ use tower_http::{
     cors::{Any, CorsLayer},
     trace::TraceLayer,
 };
-use warhundred_app::app_state::AppState;
-use warhundred_app::error::internal_error;
+use warhundred_be::app_state::AppState;
+use warhundred_be::error::internal_error;
 
 #[tokio::main]
 async fn main() {

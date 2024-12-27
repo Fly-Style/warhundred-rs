@@ -58,17 +58,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS player_nickname ON player (nickname);
 
 CREATE TABLE IF NOT EXISTS player_class
 (
-    class_id   INTEGER     NOT NULL PRIMARY KEY,
-    class_name VARCHAR(16) NOT NULL
+    class_id             INTEGER     NOT NULL PRIMARY KEY,
+    class_name           VARCHAR(16) NOT NULL,
+    class_spec_one_name  VARCHAR(16),
+    class_spec_two_name  VARCHAR(16),
+    class_spec_tree_name VARCHAR(16)
 );
 
 INSERT INTO player_class
-VALUES (0, 'no-class'),
-       (1, 'warrior'),
-       (2, 'archer'),
-       (3, 'healer'),
-       (4, 'rogue'),
-       (5, 'lancer');
+VALUES (0, 'no-class', NULL, NULL, NULL),
+       (1, 'Warrior', 'One-handed weapons', 'Two-handed weapons', 'Shield'),
+       (2, 'Archer', 'Bow', 'Crossbow', 'Dexterity'),
+       (3, 'Healer', 'Therapy', 'Surgery', 'Buffing'),
+       (4, 'Rogue', 'Stealth', 'Traps', NULL),
+       (5, 'Lancer', 'Horseriding', 'Crushing Weapons', 'Impaling Weapons');
 
 CREATE TABLE IF NOT EXISTS player_attributes
 (
@@ -85,6 +88,54 @@ CREATE TABLE IF NOT EXISTS player_attributes
     valor      INTEGER                           NOT NULL DEFAULT 0,
     rank       VARCHAR(32)                       NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS player_experience_table
+(
+    exp   INTEGER NOT NULL PRIMARY KEY, -- experience for the next up
+    up    INTEGER NOT NULL,             -- 'up' number within the level
+    level INTEGER NOT NULL,             -- level
+    attrs INTEGER NOT NULL,             -- attributes point granted by reaching the up
+    money INTEGER NOT NULL              -- attributes point granted by reaching the up
+);
+
+-- TODO: fetch into some cache during the server start
+INSERT INTO player_experience_table
+VALUES (0, 0, 0, 3, 50),
+       (25, 0, 1, 3, 100),
+       (100, 1, 1, 1, 100),
+       (250, 0, 2, 4, 200),
+       (400, 1, 2, 1, 200),
+       (650, 2, 2, 1, 250),
+       (1000, 0, 3, 4, 400),
+       (1500, 1, 3, 1, 250),
+       (2500, 2, 3, 1, 300),
+       (4500, 0, 4, 4, 500);
+
+CREATE TABLE IF NOT EXISTS player_rank_table
+(
+    id              INTEGER PRIMARY KEY NOT NULL,
+    valor           INTEGER             NOT NULL, -- experience for the next up
+    min_level       INTEGER             NOT NULL, -- level
+    rank_name_EN    TEXT                NOT NULL,
+    rank_name_FR    TEXT                NOT NULL,
+    rank_name_UA    TEXT                NOT NULL,
+    rank_pic_url_EN TEXT DEFAULT NULL,
+    rank_pic_url_FR TEXT DEFAULT NULL
+);
+
+INSERT INTO player_rank_table (id, valor, min_level, rank_name_EN, rank_name_FR, rank_name_UA)
+VALUES (1, 0, 0, 'Recruit', 'Recruter', 'Рекрут'),
+       (2, 5, 2, 'Rookie', 'Débutant', 'Новобранец'),
+       (3, 10, 3, 'Soldier', 'Soldat', 'Солдат'),
+       (4, 25, 4, 'Senior Soldier', 'Soldat supérieur', 'Старший солдат'),
+       (5, 50, 4, 'Foreman', 'Contremaître', 'Десятник'),
+       (6, 75, 5, 'Sergeant', 'Sergeant', 'Сержант'),
+       (7, 100, 5, 'Senior Sergeant', 'Sergent supérieur', 'Старший Сержант'),
+       (8, 150, 6, 'Master Sergeant', 'Sergent-chef', 'Мастер-Сержант'),
+       (9, 200, 6, 'First Sergeant', 'Premier Sergent', 'Первый Сержант'),
+       (10, 300, 7, 'Cornet', 'Cornet', 'Корнет'),
+       (11, 400, 7, 'Knight', 'Chevalier', 'Рыцарь'),
+       (20, 10000, 10, 'Marshall', 'Marshall', 'Маршал');
 
 --- ITEMS ---
 

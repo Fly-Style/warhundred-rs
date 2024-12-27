@@ -1473,21 +1473,6 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 name = "warhundred-app"
 version = "0.1.0"
 dependencies = [
- "async-trait",
- "axum",
- "axum-login",
- "axum-macros",
- "deadpool-diesel",
- "diesel",
- "password-auth",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "warhundred-be"
-version = "0.1.0"
-dependencies = [
  "axum",
  "axum-login",
  "chrono",
@@ -1502,8 +1487,23 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
- "warhundred-app",
+ "warhundred-be",
  "warhundred-game-grid",
+]
+
+[[package]]
+name = "warhundred-be"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "axum-login",
+ "axum-macros",
+ "deadpool-diesel",
+ "diesel",
+ "password-auth",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
