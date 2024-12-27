@@ -28,7 +28,7 @@ async fn main() {
 
     // TODO: understand how to host the index file + tree-shacked directory
 
-    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
     axum::serve(
         listener,
         app.layer(CorsLayer::new().allow_origin(Any))
