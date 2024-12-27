@@ -1,30 +1,51 @@
-import React, { useEffect, useRef } from "react";
+import {useEffect, useRef, useState} from "react";
 import * as PIXI from "pixi.js";
 import '../GameWindow.css'
+import {updateDimensions} from "../../../util/utils.js";
 
 const BattleCanvas = () => {
   const pixiContainer = useRef(null);
+  const [dimensions, setDimensions] = useState({width: 0, height: 0});
 
   useEffect(() => {
+    updateDimensions(pixiContainer, dimensions, setDimensions);
+
     const app = new PIXI.Application({
-      // height: pixiContainer.current.getBoundingClientRect().height,
-      // width: pixiContainer.current.getBoundingClientRect().width,
+      height: dimensions.height,
+      width: dimensions.width,
       autoResize: true,
-      backgroundColor: 0x1e1e1e
+      backgroundColor: 0x000000
     });
     pixiContainer.current.appendChild(app.view);
 
-    // Add battle-specific graphics (like red battlefields)
-    const battlefield = new PIXI.Graphics();
-    battlefield.beginFill(0xff0000);
-    battlefield.drawRect(50, 50, 400, 400);
-    battlefield.endFill();
-    app.stage.addChild(battlefield);
+    const canvasResizeObserver = () => {
+      if (pixiContainer.current &&
+          (dimensions.width !== pixiContainer.current.offsetWidth
+              || dimensions.height !== pixiContainer.current.offsetHeight)) {
+        setDimensions({
+          width: pixiContainer.current.offsetWidth,
+          height: pixiContainer.current.offsetHeight
+        })
+      }
+      app.renderer.resize(dimensions.width, dimensions.height);
+    }
 
-    return () => app.destroy(true, true); // Cleanup
-  }, []);
+    // Add static town graphics (like buildings or trees)
+    const building = new PIXI.Graphics();
+    building.beginFill(0xffff00);
+    building.drawRect(50, 150, 200, 300); // A green "building"
+    building.endFill();
+    app.stage.addChild(building);
 
-  return <div ref={pixiContainer} className="dumb-fuck"/>;
+    window.addEventListener("resize", canvasResizeObserver);
+
+    return () => {
+      window.removeEventListener("resize", canvasResizeObserver);
+      app.destroy(true, true);
+    } // Cleanup
+  }, [pixiContainer, dimensions]);
+
+  return <div ref={pixiContainer} className="game-window-canvas"/>;
 };
 
 export default BattleCanvas;
