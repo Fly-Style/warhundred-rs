@@ -22,7 +22,7 @@ export const Chat = () => {
   };
 
   return (
-    <div className="chat-parent">
+    <div className="cnt chat-parent">
       <div className="chat-handlers"></div>
       <div className="chat-history">
         {messages.map((message, index) => (

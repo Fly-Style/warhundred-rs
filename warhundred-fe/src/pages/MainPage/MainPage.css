@@ -23,7 +23,16 @@
 }
 
 .header { grid-area: 1 / 1 / 2 / 2; }
-.game-window-wrap { grid-area: 2 / 1 / 3 / 2; }
+
+/*noinspection CssInvalidPropertyValue*/
+.game-window-wrap {
+  grid-area: 2 / 1 / 3 / 2;
+  border: 1px solid black;
+  min-height: -webkit-fill-available;
+  max-height: -webkit-fill-available;
+  min-width: -webkit-fill-available;
+  max-width: -webkit-fill-available;
+}
 .hidden-area-wrap { grid-area: 1 / 2 / 2 / 3; }
 .locations-list-wrap { grid-area: 2 / 2 / 3 / 3; }
 

@@ -5,9 +5,10 @@ import {useAuth} from "../../context/AuthProvider.jsx";
 export const RequireAuth = () => {
   const auth = useAuth();
   return (
-      auth?.user
-          ? <MainPage/>
-          : <EntryPage/>
+      // auth?.user
+          <MainPage/>
+          // ? <MainPage/>
+          // : <EntryPage/>
   );
 }
 

@@ -1,0 +1,5 @@
+/*noinspection CssInvalidPropertyValue*/
+.game-window-canvas {
+  min-height: -webkit-fill-available;
+  min-width: -webkit-fill-available;
+}
