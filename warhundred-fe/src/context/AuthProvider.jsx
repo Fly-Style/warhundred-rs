@@ -25,7 +25,7 @@ function useProvideAuth() {
     axios.post(
       "/login",
       {"username": username, "password": password},
-      {headers: {'Content-Type': 'application/json'}}
+      {headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}}
     ).then(res => {
       if (res.status === HttpStatusCode.Ok) {
         setUser(username);
