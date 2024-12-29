@@ -113,10 +113,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    player_attributes (id) {
-        id -> Integer,
-        class_id -> Integer,
+    player_attributes (player_id) {
         player_id -> Integer,
+        class_id -> Integer,
+        rank_id -> Integer,
         strength -> Integer,
         dexterity -> Integer,
         physique -> Integer,
@@ -125,7 +125,6 @@ diesel::table! {
         experience -> Integer,
         level -> Integer,
         valor -> Integer,
-        rank -> Text,
     }
 }
 
@@ -136,6 +135,18 @@ diesel::table! {
         class_spec_one_name -> Nullable<Text>,
         class_spec_two_name -> Nullable<Text>,
         class_spec_tree_name -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    player_class_progress (rowid) {
+        rowid -> Integer,
+        player_id -> Integer,
+        class_id -> Integer,
+        first_spec_progress -> Float,
+        second_spec_progress -> Float,
+        third_spec_progress -> Nullable<Float>,
+        total_progress -> Nullable<Float>,
     }
 }
 
@@ -203,6 +214,7 @@ diesel::joinable!(non_battle_consumable_item -> item (item_id));
 diesel::joinable!(player -> guild (guild_id));
 diesel::joinable!(player_attributes -> player (player_id));
 diesel::joinable!(player_attributes -> player_class (class_id));
+diesel::joinable!(player_attributes -> player_rank_table (rank_id));
 diesel::joinable!(player_inventory -> item (item_id));
 diesel::joinable!(player_inventory -> player (player_id));
 diesel::joinable!(weapon_item -> item (item_id));
@@ -222,6 +234,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     player,
     player_attributes,
     player_class,
+    player_class_progress,
     player_experience_table,
     player_inventory,
     player_rank_table,

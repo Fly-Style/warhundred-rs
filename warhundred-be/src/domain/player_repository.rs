@@ -120,9 +120,10 @@ pub struct Credentials {
 #[derive(Queryable, Insertable)]
 #[diesel(table_name = crate::schema::player_attributes)]
 pub struct PlayerAttribute {
-    pub id: i32,
+    // pub id: i32,
     pub class_id: i32,
     pub player_id: i32,
+    pub rank_id: i32,
     pub strength: i32,
     pub dexterity: i32,
     pub physique: i32,
@@ -131,5 +132,4 @@ pub struct PlayerAttribute {
     pub experience: i32,
     pub level: i32,
     pub valor: i32,
-    pub rank: String,
 }

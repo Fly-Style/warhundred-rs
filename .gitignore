@@ -1,4 +1,5 @@
 .idea
+.env
 /public
 /target
 /node_modules

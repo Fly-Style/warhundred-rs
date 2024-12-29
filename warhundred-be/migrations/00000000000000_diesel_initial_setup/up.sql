@@ -56,6 +56,33 @@ CREATE TABLE IF NOT EXISTS player
 
 CREATE UNIQUE INDEX IF NOT EXISTS player_nickname ON player (nickname);
 
+CREATE TABLE IF NOT EXISTS player_attributes
+(
+    player_id  INTEGER NOT NULL PRIMARY KEY REFERENCES player (id),
+    class_id   INTEGER NOT NULL REFERENCES player_class (class_id) DEFAULT 1,
+    rank_id    INTEGER NOT NULL REFERENCES player_rank_table (id) DEFAULT 1,
+    strength   INTEGER NOT NULL                                   DEFAULT 0,
+    dexterity  INTEGER NOT NULL                                   DEFAULT 0,
+    physique   INTEGER NOT NULL                                   DEFAULT 0,
+    luck       INTEGER NOT NULL                                   DEFAULT 0,
+    intellect  INTEGER NOT NULL                                   DEFAULT 0,
+    experience INTEGER NOT NULL,
+    level      INTEGER NOT NULL                                   DEFAULT 0,
+    valor      INTEGER NOT NULL                                   DEFAULT 0
+);
+
+CREATE TABLE player_class_progress
+(
+    player_id            INTEGER NOT NULL,
+    class_id             INTEGER NOT NULL,
+    first_spec_progress  REAL    NOT NULL DEFAULT 0,
+    second_spec_progress REAL    NOT NULL DEFAULT 0,
+    third_spec_progress  REAL             DEFAULT NULL,
+    total_progress       REAL GENERATED ALWAYS AS ((first_spec_progress + second_spec_progress) / 2) STORED
+);
+
+--- PLAYER STATIC TABLES ---
+
 CREATE TABLE IF NOT EXISTS player_class
 (
     class_id             INTEGER     NOT NULL PRIMARY KEY,
@@ -72,22 +99,6 @@ VALUES (0, 'no-class', NULL, NULL, NULL),
        (3, 'Healer', 'Therapy', 'Surgery', 'Buffing'),
        (4, 'Rogue', 'Stealth', 'Traps', NULL),
        (5, 'Lancer', 'Horseriding', 'Crushing Weapons', 'Impaling Weapons');
-
-CREATE TABLE IF NOT EXISTS player_attributes
-(
-    id         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    class_id   INTEGER                           NOT NULL REFERENCES player_class (class_id),
-    player_id  INTEGER                           NOT NULL REFERENCES player (id),
-    strength   INTEGER                           NOT NULL DEFAULT 0,
-    dexterity  INTEGER                           NOT NULL DEFAULT 0,
-    physique   INTEGER                           NOT NULL DEFAULT 0,
-    luck       INTEGER                           NOT NULL DEFAULT 0,
-    intellect  INTEGER                           NOT NULL DEFAULT 0,
-    experience INTEGER                           NOT NULL,
-    level      INTEGER                           NOT NULL DEFAULT 0,
-    valor      INTEGER                           NOT NULL DEFAULT 0,
-    rank       VARCHAR(32)                       NOT NULL DEFAULT 0
-);
 
 CREATE TABLE IF NOT EXISTS player_experience_table
 (

@@ -4,7 +4,7 @@ use axum::{Json, Router};
 use axum_login::AuthnBackend;
 use chrono::prelude::Utc;
 use tower_http::services::ServeDir;
-
+use tracing::{debug, info, warn};
 use error::PlayerError;
 use warhundred_be::app_state::AppState;
 use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer, Player};
@@ -38,14 +38,12 @@ pub(crate) async fn register(
         guild_id: None,
     };
 
-    match Player::register_player(&state.pool, new_player).await {
-        Ok(player) => Ok(Json(RegisterPlayerResponse {
-            id: player.id as i64,
-            nickname: player.nickname,
-            registered: true,
-        })),
-        Err(e) => Err(e),
-    }
+    let player = Player::register_player(&state.pool, new_player).await?;
+    Ok(Json(RegisterPlayerResponse {
+        id: player.id as i64,
+        nickname: player.nickname,
+        registered: true,
+    }))
 }
 
 pub(crate) async fn login(
@@ -56,24 +54,21 @@ pub(crate) async fn login(
         username: extractor.username.clone(),
         password: extractor.password,
     };
-    let auth_result = state.authenticate(cred).await;
+    let auth_result = state.authenticate(cred).await?;
 
     match auth_result {
-        Ok(player_opt) => match player_opt {
-            Some(player) => {
-                println!("Authenticating player: {:?} - success", extractor.username);
-                Ok(Json(LoginPlayerResponse {
-                    nickname: player.nickname,
-                    logged_in: true,
-                }))
-            }
+        Some(player) => {
+            debug!("Authenticating player: {:?} - success", extractor.username);
+            Ok(Json(LoginPlayerResponse {
+                nickname: player.nickname,
+                logged_in: true,
+            }))
+        }
 
-            None => {
-                println!("Player was found in database, but cannot unwrap Option.");
-                Err(PlayerError::NotFound(extractor.username))
-            }
-        },
-        Err(e) => Err(e),
+        None => {
+            warn!("Player {:?} was found, but Option unwrap was not successful.", extractor.username.as_str());
+            Err(PlayerError::NotFound(extractor.username))
+        }
     }
 }
 

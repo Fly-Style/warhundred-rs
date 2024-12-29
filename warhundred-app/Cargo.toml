@@ -13,6 +13,7 @@ axum-login = { workspace = true }
 dotenvy = { workspace = true }
 deadpool-diesel = { workspace = true }
 chrono = "0.4.37"
+eyre = {workspace = true}
 mime = "0.3.17"
 password-auth = { workspace = true }
 serde = {workspace = true}
