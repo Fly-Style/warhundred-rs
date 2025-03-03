@@ -13,6 +13,11 @@ axum-login = { workspace = true }
 axum-macros = { workspace = true }
 deadpool-diesel = { workspace = true }
 diesel = { workspace = true }
+eyre = {workspace = true}
 password-auth = { workspace = true }
 serde = {workspace = true}
 serde_json = { workspace = true }
+thiserror = {workspace = true}
+
+grid = "0.11.0"
+lazy_static = "1.4.0"

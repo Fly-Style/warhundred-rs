@@ -4,7 +4,7 @@ use axum::{Json, Router};
 use axum_login::AuthnBackend;
 use chrono::prelude::Utc;
 use tower_http::services::ServeDir;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 use error::PlayerError;
 use warhundred_be::app_state::AppState;
 use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer, Player};

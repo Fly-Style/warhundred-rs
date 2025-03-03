@@ -25,7 +25,6 @@ tower-http = { version = "0.6", features = ["fs", "trace", "cors"] }
 tracing = "0.1.40"
 # Local modules
 warhundred-be = { path = "../warhundred-be" }
-warhundred-game-grid = { path = "../warhundred-game-grid" }
 
 [features]
 it_test = []

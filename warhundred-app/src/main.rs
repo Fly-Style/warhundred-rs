@@ -11,7 +11,7 @@ use tower_http::{
     trace::TraceLayer,
 };
 use warhundred_be::app_state::AppState;
-use warhundred_be::error::internal_error;
+// use warhundred_be::error::internal_error;
 
 #[tokio::main]
 async fn main() {
@@ -35,6 +35,6 @@ async fn main() {
             .layer(TraceLayer::new_for_http()),
     )
     .await
-    .map_err(internal_error)
+    // .map_err(internal_error)
     .unwrap();
 }

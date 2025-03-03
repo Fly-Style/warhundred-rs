@@ -5,7 +5,6 @@
 /node_modules
 /warhundred-fe/node_modules
 /warhundred-web/public
-/warhundred-game-grid/target
 *.sqlite
 test.db
 .DS_Store

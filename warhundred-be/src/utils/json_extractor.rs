@@ -47,10 +47,6 @@ impl IntoResponse for PlayerError {
                 StatusCode::NOT_FOUND,
                 format!("Player with nickname {} has not been found", nick),
             ),
-            _ => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                String::from("Internal server error"),
-            ),
         };
         (
             status,

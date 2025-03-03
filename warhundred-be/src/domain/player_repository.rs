@@ -1,8 +1,12 @@
-use crate::error::PlayerError;
+use crate::error::{DatabaseError, PlayerError};
+use crate::schema::player::dsl::*;
+use crate::schema::player_attributes::dsl::player_attributes;
 use axum_login::AuthUser;
 use deadpool_diesel::sqlite::Pool;
 use diesel::prelude::*;
 use std::fmt::Debug;
+
+type PlayerWithAttributes = (Player, PlayerAttributes);
 
 #[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::player)]
@@ -47,28 +51,8 @@ impl AuthUser for Player {
     }
 }
 
+// TODO: write integration tests for these functions
 impl Player {
-    pub async fn get_player_by_nick(pool: &Pool, nick: String) -> Result<Player, PlayerError> {
-        use crate::schema::player::dsl::*;
-        let conn = pool.get().await.unwrap();
-        let _nick = nick.clone();
-
-        let res = conn
-            .interact(move |conn| player.filter(nickname.eq(nick)).first::<Player>(conn))
-            .await;
-        // TODO: understand map_err
-        // .map_err(adapt_infra_error)?
-        // .map_err(adapt_infra_error)?;
-
-        match res {
-            Ok(qr) => match qr {
-                Ok(res) => Ok(res),
-                Err(_) => Err(PlayerError::NotFound(_nick)),
-            },
-            Err(_) => Err(PlayerError::NotFound(_nick)),
-        }
-    }
-
     pub async fn register_player(
         pool: &Pool,
         new_player: InsertablePlayer,
@@ -83,7 +67,7 @@ impl Player {
             .interact(move |conn| {
                 diesel::insert_into(player)
                     .values(new_player)
-                    .returning(Player::as_returning()) // Return the inserted playa
+                    .returning(Player::as_returning())
                     .get_result(conn)
             })
             .await;
@@ -91,9 +75,73 @@ impl Player {
         match res {
             Ok(qr) => match qr {
                 Ok(res) => Ok(res),
-                Err(_) => Err(PlayerError::CannotRegister(String::from(nick))),
+                Err(_) => Err(PlayerError::CannotRegister(nick)),
             },
-            Err(_) => Err(PlayerError::CannotRegister(String::from(nick))),
+            Err(_) => Err(PlayerError::CannotRegister(nick)),
+        }
+    }
+
+    pub async fn get_player_by_nick(pool: &Pool, nick: String) -> Result<Player, PlayerError> {
+        let conn = pool.get().await.unwrap();
+        let _nick: String = nick.clone();
+
+        let res = conn
+            .interact(move |conn| player.filter(nickname.eq(nick)).first::<Player>(conn))
+            .await;
+
+        match res {
+            Ok(qr) => match qr {
+                Ok(res) => Ok(res),
+                Err(_) => Err(PlayerError::NotFound(_nick)),
+            },
+            Err(_) => Err(PlayerError::NotFound(_nick)),
+        }
+    }
+    
+    pub async fn get_full_player_info_by_nick(pool: &Pool, nick: String) -> Result<PlayerWithAttributes, PlayerError> {
+        let conn = pool.get().await.unwrap();
+        let _nick: String = nick.clone();
+        
+        let res = conn
+            .interact(move |conn| {
+                player.filter(nickname.eq(nick))
+                    .inner_join(player_attributes)
+                    .first::<(Player, PlayerAttributes)>(conn)
+            })
+            .await;
+
+        match res {
+            Ok(qr) => match qr {
+                Ok(res) => Ok(res),
+                Err(_) => Err(PlayerError::NotFound(_nick)),
+            },
+            Err(_) => Err(PlayerError::NotFound(_nick)),
+        }
+    }
+
+    pub async fn inc_valor(pool: &Pool, p_id: i32, rank_up: bool) -> Result<(), DatabaseError> {
+        use crate::schema::player_attributes::dsl::*;
+        let conn = pool.get().await.unwrap();
+        let tx_res = conn.interact(move |conn| {
+            conn.transaction(|conn| {
+                diesel::update(player_attributes)
+                    .filter(player_id.eq(p_id))
+                    .set(valor.eq(valor + 1))
+                    .execute(conn)?;
+                if rank_up {
+                    diesel::update(player_attributes)
+                        .filter(player_id.eq(p_id))
+                        .set(rank_id.eq(rank_id + 1))
+                        .execute(conn)?;
+                }
+                Ok::<(), deadpool_diesel::Error>(())
+            })
+        })
+        .await;
+
+        match tx_res {
+            Ok(_) => Ok(()),
+            Err(e) => Err(DatabaseError::TransactionError(e.to_string()))
         }
     }
 }
@@ -117,9 +165,9 @@ pub struct Credentials {
     pub password: String,
 }
 
-#[derive(Queryable, Insertable)]
+#[derive(Queryable, Insertable, Default, Debug, Clone)]
 #[diesel(table_name = crate::schema::player_attributes)]
-pub struct PlayerAttribute {
+pub struct PlayerAttributes {
     // pub id: i32,
     pub class_id: i32,
     pub player_id: i32,

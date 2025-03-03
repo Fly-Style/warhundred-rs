@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS player
     id                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     nickname           TEXT                              NOT NULL,
     email              TEXT                              NOT NULL,
-    password           TEXT                              NOT NULL,
+    password           TEXT                              NOT NULL, -- hashed password
+    registration_time  TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login         TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_map_location  INTEGER                           NOT NULL,
     last_town_location INTEGER                           NOT NULL,
@@ -55,20 +56,21 @@ CREATE TABLE IF NOT EXISTS player
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS player_nickname ON player (nickname);
+CREATE UNIQUE INDEX IF NOT EXISTS player_creds ON player (email, password);
 
 CREATE TABLE IF NOT EXISTS player_attributes
 (
     player_id  INTEGER NOT NULL PRIMARY KEY REFERENCES player (id),
     class_id   INTEGER NOT NULL REFERENCES player_class (class_id) DEFAULT 1,
-    rank_id    INTEGER NOT NULL REFERENCES player_rank_table (id) DEFAULT 1,
-    strength   INTEGER NOT NULL                                   DEFAULT 0,
-    dexterity  INTEGER NOT NULL                                   DEFAULT 0,
-    physique   INTEGER NOT NULL                                   DEFAULT 0,
-    luck       INTEGER NOT NULL                                   DEFAULT 0,
-    intellect  INTEGER NOT NULL                                   DEFAULT 0,
+    rank_id    INTEGER NOT NULL REFERENCES player_rank_table (id)  DEFAULT 1,
+    strength   INTEGER NOT NULL                                    DEFAULT 0,
+    dexterity  INTEGER NOT NULL                                    DEFAULT 0,
+    physique   INTEGER NOT NULL                                    DEFAULT 0,
+    luck       INTEGER NOT NULL                                    DEFAULT 0,
+    intellect  INTEGER NOT NULL                                    DEFAULT 0,
     experience INTEGER NOT NULL,
-    level      INTEGER NOT NULL                                   DEFAULT 0,
-    valor      INTEGER NOT NULL                                   DEFAULT 0
+    level      INTEGER NOT NULL                                    DEFAULT 0,
+    valor      INTEGER NOT NULL                                    DEFAULT 0
 );
 
 CREATE TABLE player_class_progress
@@ -85,11 +87,11 @@ CREATE TABLE player_class_progress
 
 CREATE TABLE IF NOT EXISTS player_class
 (
-    class_id             INTEGER     NOT NULL PRIMARY KEY,
-    class_name           VARCHAR(16) NOT NULL,
-    class_spec_one_name  VARCHAR(16),
-    class_spec_two_name  VARCHAR(16),
-    class_spec_tree_name VARCHAR(16)
+    class_id             INTEGER    NOT NULL PRIMARY KEY,
+    class_name           VARCHAR(8) NOT NULL,
+    class_spec_one_name  VARCHAR(32),
+    class_spec_two_name  VARCHAR(32),
+    class_spec_tree_name VARCHAR(32)
 );
 
 INSERT INTO player_class
@@ -120,7 +122,8 @@ VALUES (0, 0, 0, 3, 50),
        (1000, 0, 3, 4, 400),
        (1500, 1, 3, 1, 250),
        (2500, 2, 3, 1, 300),
-       (4500, 0, 4, 4, 500);
+       (4500, 0, 4, 4, 500),
+       (1000000, 0, 5, 4, 2500);
 
 CREATE TABLE IF NOT EXISTS player_rank_table
 (
