@@ -1,10 +1,10 @@
 mod routes;
 
-use crate::routes::initial_routes::root_router;
+use crate::routes::root_routes::root_router;
+use deadpool_diesel::sqlite::Manager;
+use deadpool_diesel::Pool;
 use dotenvy::dotenv;
 use std::env;
-use deadpool_diesel::Pool;
-use deadpool_diesel::sqlite::{Manager};
 use tokio::net::TcpListener;
 use tower_http::{
     cors::{Any, CorsLayer},

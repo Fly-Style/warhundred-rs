@@ -21,12 +21,10 @@ impl AuthnBackend for AppState {
     ) -> Result<Option<Self::User>, Self::Error> {
         let result = Player::get_player_by_nick(&self.pool, username).await;
         match result {
-            Ok(player) => {
-                match password_auth::verify_password(password, &*player.password) {
-                    Ok(_) => Ok(Some(player)),
-                    Err(_) => Err(PlayerError::NotFound(player.nickname)),
-                }
-            }
+            Ok(player) => match password_auth::verify_password(password, &*player.password) {
+                Ok(_) => Ok(Some(player)),
+                Err(_) => Err(PlayerError::NotFound(player.nickname)),
+            },
             Err(e) => Err(e),
         }
     }

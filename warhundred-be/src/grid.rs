@@ -1,4 +1,3 @@
-
 use grid::{grid, Grid};
 use lazy_static::lazy_static;
 use std::cmp::Ordering;
@@ -386,12 +385,14 @@ mod tests {
         let neighbours = hex_grid.pick_all_neighbours(&base_hex);
         assert_eq!(neighbours.len(), 6);
 
-        let expected_neighbors = [Hex::new_default(3, 2),
+        let expected_neighbors = [
+            Hex::new_default(3, 2),
             Hex::new_default(2, 1),
             Hex::new_default(1, 1),
             Hex::new_default(1, 2),
             Hex::new_default(1, 3),
-            Hex::new_default(2, 3)];
+            Hex::new_default(2, 3),
+        ];
 
         (0..neighbours.len()).for_each(|i| {
             assert_eq!(neighbours[i], &expected_neighbors[i]);
@@ -407,10 +408,12 @@ mod tests {
         let path = hex_grid.direct_path(&from, &to);
         assert_eq!(path.len(), 4);
 
-        let expected_path = [Hex::new_default(1, 1),
+        let expected_path = [
+            Hex::new_default(1, 1),
             Hex::new_default(2, 2),
             Hex::new_default(3, 2),
-            Hex::new_default(3, 3)];
+            Hex::new_default(3, 3),
+        ];
         (0..path.len()).for_each(|i| {
             assert_eq!(path[i], &expected_path[i]);
         });
@@ -440,12 +443,14 @@ mod tests {
         let path = hex_grid.smart_path(&from, &to);
         assert_eq!(path.len(), 6);
 
-        let expected_path = [Hex::new_default(1, 2),
+        let expected_path = [
+            Hex::new_default(1, 2),
             Hex::new_default(2, 2),
             Hex::new_default(2, 1),
             Hex::new_default(3, 1),
             Hex::new_default(4, 2),
-            Hex::new_default(4, 3)];
+            Hex::new_default(4, 3),
+        ];
         (0..path.len()).for_each(|i| {
             assert_eq!(path[i], &expected_path[i]);
         });

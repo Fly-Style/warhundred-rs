@@ -97,14 +97,18 @@ impl Player {
             Err(_) => Err(PlayerError::NotFound(_nick)),
         }
     }
-    
-    pub async fn get_full_player_info_by_nick(pool: &Pool, nick: String) -> Result<PlayerWithAttributes, PlayerError> {
+
+    pub async fn get_full_player_info_by_nick(
+        pool: &Pool,
+        nick: String,
+    ) -> Result<PlayerWithAttributes, PlayerError> {
         let conn = pool.get().await.unwrap();
         let _nick: String = nick.clone();
-        
+
         let res = conn
             .interact(move |conn| {
-                player.filter(nickname.eq(nick))
+                player
+                    .filter(nickname.eq(nick))
                     .inner_join(player_attributes)
                     .first::<(Player, PlayerAttributes)>(conn)
             })
@@ -122,26 +126,27 @@ impl Player {
     pub async fn inc_valor(pool: &Pool, p_id: i32, rank_up: bool) -> Result<(), DatabaseError> {
         use crate::schema::player_attributes::dsl::*;
         let conn = pool.get().await.unwrap();
-        let tx_res = conn.interact(move |conn| {
-            conn.transaction(|conn| {
-                diesel::update(player_attributes)
-                    .filter(player_id.eq(p_id))
-                    .set(valor.eq(valor + 1))
-                    .execute(conn)?;
-                if rank_up {
+        let tx_res = conn
+            .interact(move |conn| {
+                conn.transaction(|conn| {
                     diesel::update(player_attributes)
                         .filter(player_id.eq(p_id))
-                        .set(rank_id.eq(rank_id + 1))
+                        .set(valor.eq(valor + 1))
                         .execute(conn)?;
-                }
-                Ok::<(), deadpool_diesel::Error>(())
+                    if rank_up {
+                        diesel::update(player_attributes)
+                            .filter(player_id.eq(p_id))
+                            .set(rank_id.eq(rank_id + 1))
+                            .execute(conn)?;
+                    }
+                    Ok::<(), deadpool_diesel::Error>(())
+                })
             })
-        })
-        .await;
+            .await;
 
         match tx_res {
             Ok(_) => Ok(()),
-            Err(e) => Err(DatabaseError::TransactionError(e.to_string()))
+            Err(e) => Err(DatabaseError::TransactionError(e.to_string())),
         }
     }
 }

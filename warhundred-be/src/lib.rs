@@ -3,6 +3,6 @@
 pub mod app_state;
 pub mod domain;
 pub mod error;
+mod grid;
 pub mod schema;
 pub mod utils;
-mod grid;

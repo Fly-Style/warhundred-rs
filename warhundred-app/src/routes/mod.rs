@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub mod initial_routes;
+pub mod root_routes;
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterPlayerRequest {
@@ -25,5 +25,5 @@ pub struct LoginPlayerRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginPlayerResponse {
     nickname: String,
-    logged_in: bool
+    logged_in: bool,
 }

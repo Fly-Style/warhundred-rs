@@ -3,9 +3,9 @@ use axum::routing::post;
 use axum::{Json, Router};
 use axum_login::AuthnBackend;
 use chrono::prelude::Utc;
+use error::PlayerError;
 use tower_http::services::ServeDir;
 use tracing::{debug, warn};
-use error::PlayerError;
 use warhundred_be::app_state::AppState;
 use warhundred_be::domain::player_repository::{Credentials, InsertablePlayer, Player};
 use warhundred_be::error;
@@ -14,6 +14,8 @@ use warhundred_be::utils::json_extractor::JsonExtractor;
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
 };
+
+type Result<T, E = PlayerError> = std::result::Result<T, E>;
 
 pub fn root_router() -> Router<AppState> {
     Router::new()
@@ -25,7 +27,7 @@ pub fn root_router() -> Router<AppState> {
 pub(crate) async fn register(
     State(state): State<AppState>,
     JsonExtractor(new_player): JsonExtractor<RegisterPlayerRequest>,
-) -> Result<Json<RegisterPlayerResponse>, PlayerError> {
+) -> Result<Json<RegisterPlayerResponse>> {
     println!("Registering player: {:?}", new_player);
 
     let new_player = InsertablePlayer {
@@ -49,7 +51,7 @@ pub(crate) async fn register(
 pub(crate) async fn login(
     State(state): State<AppState>,
     JsonExtractor(extractor): JsonExtractor<LoginPlayerRequest>,
-) -> Result<Json<LoginPlayerResponse>, PlayerError> {
+) -> Result<Json<LoginPlayerResponse>> {
     let cred = Credentials {
         username: extractor.username.clone(),
         password: extractor.password,
@@ -66,7 +68,10 @@ pub(crate) async fn login(
         }
 
         None => {
-            warn!("Player {:?} was found, but Option unwrap was not successful.", extractor.username.as_str());
+            warn!(
+                "Player {:?} was found, but Option unwrap was not successful.",
+                extractor.username.as_str()
+            );
             Err(PlayerError::NotFound(extractor.username))
         }
     }
@@ -93,7 +98,7 @@ mod tests {
 
         let state = AppState { pool };
 
-        let app = crate::routes::initial_routes::root_router().with_state(state);
+        let app = crate::routes::root_routes::root_router().with_state(state);
 
         let response: Response = app
             .oneshot(
