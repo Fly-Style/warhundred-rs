@@ -27,7 +27,6 @@ async fn main() {
     let app = root_router().with_state(state);
 
     // TODO: understand how to host the index file + tree-shacked directory
-
     let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
     axum::serve(
         listener,

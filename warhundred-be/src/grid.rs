@@ -225,7 +225,7 @@ impl HexGrid {
         path.iter().map(|cube| self.cube_to_offset(cube)).collect()
     }
 
-    pub fn smart_path<'a>(&'a self, from: &'a Hex, to: &'a Hex) -> Vec<&Hex> {
+    pub fn smart_path<'a>(&'a self, from: &'a Hex, to: &'a Hex) -> Vec<&'a Hex> {
         let mut frontier: BinaryHeap<HexWithPriority> = BinaryHeap::new();
         let mut path: Vec<&Hex> = vec![];
         let mut came_from: HashMap<&Hex, &Hex> = HashMap::new();
