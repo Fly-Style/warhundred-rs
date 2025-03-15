@@ -338,9 +338,8 @@ impl HexGrid {
 
 #[cfg(test)]
 mod tests {
-    use crate::grid::{Hex, HexGrid};
+    use crate::app::grid::{Hex, HexGrid};
     use std::cmp::Ordering;
-
     // region Hex
 
     #[test]
