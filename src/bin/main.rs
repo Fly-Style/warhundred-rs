@@ -1,6 +1,3 @@
-mod routes;
-
-use crate::routes::root_routes::root_router;
 use deadpool_diesel::sqlite::Manager;
 use deadpool_diesel::Pool;
 use dotenvy::dotenv;
@@ -10,8 +7,9 @@ use tower_http::{
     cors::{Any, CorsLayer},
     trace::TraceLayer,
 };
-use warhundred_be::app_state::AppState;
-// use warhundred_be::error::internal_error;
+use tracing::info;
+use warhundred_rs::app_state::AppState;
+use warhundred_rs::routes::root_routes::root_router;
 
 #[tokio::main]
 async fn main() {
@@ -28,6 +26,9 @@ async fn main() {
 
     // TODO: understand how to host the index file + tree-shacked directory
     let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
+
+    info!("Starting server on port 8000");
+
     axum::serve(
         listener,
         app.layer(CorsLayer::new().allow_origin(Any))

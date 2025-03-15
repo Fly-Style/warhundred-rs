@@ -2,8 +2,8 @@
 # see https://diesel.rs/guides/configuring-diesel-cli
 
 [print_schema]
-file = "warhundred-be/src/schema.rs"
+file = "src/app/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "/Users/sasha/dev/warhundred-rs/warhundred-be/migrations"
+dir = "src/app/migrations"

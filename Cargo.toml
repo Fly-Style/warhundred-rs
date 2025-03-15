@@ -1,21 +1,22 @@
-[workspace]
-members = [
-    "warhundred-be",
-]
+[package]
+name = "warhundred-rs"
+version = "0.1.0"
+authors = ["Sasha Syrotenko <alex.syrotenko.official@gmail.com>"]
+edition = "2021"
+rust-version = "1.82"
 
-resolver = "2"
-
-[workspace.dependencies]
+[dependencies]
 async-trait = "0.1"
-axum = "0.7.3"
-axum-login = "0.16"
-axum-macros = "0.4"
+axum = "0.8.1"
+axum-login = "0.17.0"
+axum-macros = "0.5.0"
 chrono = "0.4.37"
 deadpool-diesel = { version = "0.6", features = ["sqlite"] }
 diesel = { version = "2.2", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"
-mime = "0.3.17"
+grid = "0.11.0" # Don't updaete the version, 0.12.0 has a breaking changes
+lazy_static = "1.5.0"
 password-auth = "1.0"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0"
@@ -25,3 +26,20 @@ tower-http = { version = "0.6", features = ["fs", "trace", "cors"] }
 thiserror = "2.0.12"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
+
+[dev-dependencies]
+axum-test = { version = "17.2.0" }
+rstest = "0.25.0"
+testcontainers = { version = "0.23.1", features = ["reqwest"] }
+testcontainers-modules = { version = "0.11.5", features = [] }
+
+[[bin]]
+name = "main"
+path = "src/bin/main.rs"
+
+[features]
+it_test = []
+
+[lints.rust]
+dead_code = "allow"
+unsafe_code = "forbid"

@@ -1,6 +1,6 @@
 use crate::domain::player_repository::{Credentials, Player};
 use crate::error::PlayerError;
-use axum::async_trait;
+use async_trait::async_trait;
 use axum_login::{AuthnBackend, UserId};
 use deadpool_diesel::sqlite::Pool;
 
@@ -21,7 +21,7 @@ impl AuthnBackend for AppState {
     ) -> Result<Option<Self::User>, Self::Error> {
         let result = Player::get_player_by_nick(&self.pool, username).await;
         match result {
-            Ok(player) => match password_auth::verify_password(password, &*player.password) {
+            Ok(player) => match password_auth::verify_password(password, player.password.as_ref()) {
                 Ok(_) => Ok(Some(player)),
                 Err(_) => Err(PlayerError::NotFound(player.nickname)),
             },

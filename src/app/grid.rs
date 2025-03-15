@@ -139,7 +139,7 @@ impl HexGrid {
         }
     }
 
-    // Note: for test purposes only
+    // Note: for tests purposes only
     pub fn new_no_obstacles(width: usize, height: usize) -> Self {
         Self::new(width, height, &HashSet::<(i32, i32)>::new())
     }
