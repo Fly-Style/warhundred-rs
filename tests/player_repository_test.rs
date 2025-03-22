@@ -7,7 +7,6 @@ use http::header::CONTENT_TYPE;
 use rstest::{fixture, rstest};
 use std::sync::Arc;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
-use warhundred_rs::app_state::AppState;
 use warhundred_rs::routes::root_routes::root_router;
 
 mod common;
@@ -37,13 +36,13 @@ pub async fn app() -> eyre::Result<App> {
     conn.interact(|conn| {
         diesel::sql_query(
             "CREATE TABLE player (\
-            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \
+            id INTEGER PRIMARY KEY AUTOINCREMENT, \
             nickname TEXT NOT NULL, \
             email TEXT NOT NULL, \
             password TEXT NOT NULL, \
-            registration_time TIMESTAMP NOT NULL, \
-            last_login_time TIMESTAMP NOT NULL, \
-            guild_id INTEGER NOT NULL);",
+            registration_time TIMESTAMP, \
+            last_login_time TIMESTAMP, \
+            guild_id INTEGER);",
         )
         .execute(conn)
     })
@@ -81,7 +80,6 @@ async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> 
         .await;
 
     res.assert_status_ok();
-    println!("{:?}", res.text());
     res.assert_json_contains(&serde_json::json!({
         "nickname": "a",
         "registered": true

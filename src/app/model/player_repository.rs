@@ -8,6 +8,7 @@ use deadpool_diesel::sqlite::Pool;
 use diesel::prelude::*;
 use std::fmt::Debug;
 use std::sync::Arc;
+use tracing::error;
 
 type PlayerWithAttributes = (Player, PlayerAttributes);
 
@@ -94,7 +95,10 @@ impl Player {
         match res {
             Ok(qr) => match qr {
                 Ok(p) => Ok(p),
-                Err(_) => Err(AppError::PlayerCannotRegister(nick)),
+                Err(e) => {
+                    error!("Error: {:?}", e);
+                    Err(AppError::PlayerCannotRegister(nick))
+                },
             },
             Err(e) => Err(QueryError(e.to_string())),
         }
