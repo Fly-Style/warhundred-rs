@@ -1,5 +1,5 @@
 use crate::app_state::AppState;
-use crate::domain::player_repository::{Credentials, Player};
+use crate::model::player_repository::{Credentials, Player};
 use crate::error::{AppError, Result};
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
@@ -24,6 +24,10 @@ pub(crate) async fn register(
     State(state): State<AppState>,
     Json(new_player): Json<RegisterPlayerRequest>,
 ) -> Result<impl IntoResponse> {
+    let AppState {
+        pool
+    } = state;
+    
     println!("Registering player: {:?}", new_player);
 
     let new_player = Player {
@@ -34,7 +38,7 @@ pub(crate) async fn register(
         ..Player::default()
     };
 
-    let player = Player::register_player(&state.pool, new_player).await?;
+    let player = Player::register_player(pool.clone(), new_player).await?;
     Ok(Json(RegisterPlayerResponse {
         nickname: player.nickname,
         registered: true,

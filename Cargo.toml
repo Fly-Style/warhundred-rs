@@ -11,7 +11,7 @@ axum = "0.8.1"
 axum-login = "0.17.0"
 axum-macros = "0.5.0"
 chrono = "0.4.40"
-deadpool-diesel = { version = "0.6", features = ["sqlite"] }
+deadpool-diesel = { version = "0.6", features = ["sqlite", "rt_tokio_1", "tracing"] }
 diesel = { version = "2.2", features = ["chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"

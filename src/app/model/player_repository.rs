@@ -7,6 +7,8 @@ use chrono::naive::NaiveDateTime;
 use deadpool_diesel::sqlite::Pool;
 use diesel::prelude::*;
 use std::fmt::Debug;
+use std::sync::Arc;
+use tracing::error;
 
 type PlayerWithAttributes = (Player, PlayerAttributes);
 
@@ -76,7 +78,7 @@ impl AuthUser for Player {
 
 // TODO: write integration tests for these functions
 impl Player {
-    pub async fn register_player(pool: &Pool, new_player: Player) -> Result<Player> {
+    pub async fn register_player(pool: Arc<Pool>, new_player: Player) -> Result<Player> {
         use crate::schema::player::dsl::*;
 
         let conn = pool.get().await.unwrap();
@@ -93,13 +95,16 @@ impl Player {
         match res {
             Ok(qr) => match qr {
                 Ok(p) => Ok(p),
-                Err(_) => Err(AppError::PlayerCannotRegister(nick)),
+                Err(e) => {
+                    error!("Error: {:?}", e);
+                    Err(AppError::PlayerCannotRegister(nick))
+                },
             },
             Err(e) => Err(QueryError(e.to_string())),
         }
     }
 
-    pub async fn get_player_by_nick(pool: &Pool, nick: String) -> Result<Player> {
+    pub async fn get_player_by_nick(pool: Arc<Pool>, nick: String) -> Result<Player> {
         let conn = pool.get().await.unwrap();
         let _nick: String = nick.clone();
 
@@ -137,7 +142,7 @@ impl Player {
         }
     }
 
-    pub async fn inc_valor(pool: &Pool, p_id: i32, rank_up: bool) -> Result<()> {
+    pub async fn inc_valor(pool: Arc<Pool>, p_id: i32, rank_up: bool) -> Result<()> {
         use crate::schema::player_attributes::dsl::*;
         let conn = pool.get().await.unwrap();
         let tx_res = conn
