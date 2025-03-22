@@ -1,3 +1,3 @@
 pub mod app;
 
-pub use app::{app_state, domain, error, routes, schema, utils};
+pub use app::{app_state, domain, error, routes, schema};

@@ -11,7 +11,6 @@ pub struct RegisterPlayerRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegisterPlayerResponse {
-    id: i64,
     nickname: String,
     registered: bool,
 }

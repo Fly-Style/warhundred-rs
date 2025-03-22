@@ -4,4 +4,3 @@ pub mod error;
 mod grid;
 pub mod routes;
 pub mod schema;
-pub mod utils;

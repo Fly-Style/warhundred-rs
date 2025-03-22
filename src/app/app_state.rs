@@ -1,8 +1,9 @@
 use crate::domain::player_repository::{Credentials, Player};
-use crate::error::PlayerError;
 use async_trait::async_trait;
 use axum_login::{AuthnBackend, UserId};
 use deadpool_diesel::sqlite::Pool;
+use crate::error::AppError::PlayerNotFound;
+use crate::error::AppError;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -13,7 +14,7 @@ pub struct AppState {
 impl AuthnBackend for AppState {
     type User = Player;
     type Credentials = Credentials;
-    type Error = PlayerError;
+    type Error = AppError;
 
     async fn authenticate(
         &self,
@@ -23,7 +24,7 @@ impl AuthnBackend for AppState {
         match result {
             Ok(player) => match password_auth::verify_password(password, player.password.as_ref()) {
                 Ok(_) => Ok(Some(player)),
-                Err(_) => Err(PlayerError::NotFound(player.nickname)),
+                Err(_) => Err(PlayerNotFound(player.nickname)),
             },
             Err(e) => Err(e),
         }

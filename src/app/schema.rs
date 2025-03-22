@@ -101,13 +101,12 @@ diesel::table! {
 
 diesel::table! {
     player (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         nickname -> Text,
         email -> Text,
         password -> Text,
-        last_login -> Timestamp,
-        last_map_location -> Integer,
-        last_town_location -> Integer,
+        registration_time -> Nullable<Timestamp>,
+        last_login_time -> Nullable<Timestamp>,
         guild_id -> Nullable<Integer>,
     }
 }

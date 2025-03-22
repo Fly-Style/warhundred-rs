@@ -41,15 +41,14 @@ CREATE TABLE IF NOT EXISTS guild
 
 CREATE TABLE IF NOT EXISTS player
 (
-    id                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    nickname           TEXT                              NOT NULL,
-    email              TEXT                              NOT NULL,
-    password           TEXT                              NOT NULL, -- hashed password
-    registration_time  TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_login         TIMESTAMP                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_map_location  INTEGER                           NOT NULL,
-    last_town_location INTEGER                           NOT NULL,
-    guild_id           INTEGER REFERENCES guild (id),
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    nickname          TEXT NOT NULL,
+    email             TEXT NOT NULL,
+    password          TEXT NOT NULL, -- hashed password
+    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    guild_id          INTEGER REFERENCES guild (id),
+
 --     last_map_location  INTEGER       NOT NULL REFERENCES map_location (id),
 --     last_town_location INTEGER REFERENCES town_location (id),
     UNIQUE (nickname, email)
