@@ -42,12 +42,13 @@ CREATE TABLE IF NOT EXISTS guild
 CREATE TABLE IF NOT EXISTS player
 (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
-    nickname          TEXT NOT NULL,
-    email             TEXT NOT NULL,
-    password          TEXT NOT NULL, -- hashed password
-    registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nickname          TEXT    NOT NULL,
+    email             TEXT    NOT NULL,
+    password          TEXT    NOT NULL,           -- hashed password
+    registration_time TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
+    last_login_time   TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
     guild_id          INTEGER REFERENCES guild (id),
+    banned            INTEGER NOT NULL DEFAULT 0, -- we're faking boolean here.
 
 --     last_map_location  INTEGER       NOT NULL REFERENCES map_location (id),
 --     last_town_location INTEGER REFERENCES town_location (id),
@@ -67,19 +68,23 @@ CREATE TABLE IF NOT EXISTS player_attributes
     physique   INTEGER NOT NULL                                    DEFAULT 0,
     luck       INTEGER NOT NULL                                    DEFAULT 0,
     intellect  INTEGER NOT NULL                                    DEFAULT 0,
-    experience INTEGER NOT NULL,
+    experience INTEGER NOT NULL                                    DEFAULT 0,
     level      INTEGER NOT NULL                                    DEFAULT 0,
     valor      INTEGER NOT NULL                                    DEFAULT 0
 );
 
 CREATE TABLE player_class_progress
 (
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     player_id            INTEGER NOT NULL,
     class_id             INTEGER NOT NULL,
     first_spec_progress  REAL    NOT NULL DEFAULT 0,
     second_spec_progress REAL    NOT NULL DEFAULT 0,
     third_spec_progress  REAL             DEFAULT NULL,
-    total_progress       REAL GENERATED ALWAYS AS ((first_spec_progress + second_spec_progress) / 2) STORED
+    -- Temporarily, it is always calculating only two first specs available
+    total_progress       REAL GENERATED ALWAYS AS ((first_spec_progress + second_spec_progress) / 2) STORED,
+
+    UNIQUE (player_id)
 );
 
 --- PLAYER STATIC TABLES ---

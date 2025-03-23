@@ -27,6 +27,7 @@ tower-http = { version = "0.6", features = ["fs", "trace", "cors"] }
 thiserror = "2.0.12"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+bon = "3.5.1"
 
 [dev-dependencies]
 axum-test = { version = "17.2.0" }

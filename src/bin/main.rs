@@ -10,6 +10,7 @@ use tower_http::{
 };
 use tracing::info;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
 use warhundred_rs::app_state::AppState;
 use warhundred_rs::routes::root_routes::root_router;
 
@@ -29,7 +30,12 @@ async fn main() {
     let manager = Manager::new(database_url, deadpool_diesel::Runtime::Tokio1);
     let pool = Arc::new(Pool::builder(manager).build().unwrap());
 
-    let state = AppState { pool };
+    let player_middleware = Arc::new(PlayerMiddleware::builder().pool(pool.clone()).build());
+
+    let state = AppState {
+        pool,
+        player_middleware,
+    };
 
     let app = root_router().with_state(state);
 

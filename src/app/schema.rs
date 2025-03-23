@@ -108,6 +108,7 @@ diesel::table! {
         registration_time -> Nullable<Timestamp>,
         last_login_time -> Nullable<Timestamp>,
         guild_id -> Nullable<Integer>,
+        banned -> Integer,
     }
 }
 
@@ -138,8 +139,8 @@ diesel::table! {
 }
 
 diesel::table! {
-    player_class_progress (rowid) {
-        rowid -> Integer,
+    player_class_progress (id) {
+        id -> Nullable<Integer>,
         player_id -> Integer,
         class_id -> Integer,
         first_spec_progress -> Float,

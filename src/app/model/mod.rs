@@ -1,1 +1,2 @@
-pub mod player_repository;
+pub mod player;
+mod r#static;

@@ -42,7 +42,8 @@ pub async fn app() -> eyre::Result<App> {
             password TEXT NOT NULL, \
             registration_time TIMESTAMP, \
             last_login_time TIMESTAMP, \
-            guild_id INTEGER);",
+            guild_id INTEGER,\
+            banned INTEGER);",
         )
         .execute(conn)
     })
@@ -63,7 +64,8 @@ pub async fn after_test(pool: Arc<Pool>) -> eyre::Result<()> {
     Ok(())
 }
 
-#[cfg(all(test, feature = "it_test"))]
+// #[cfg(all(test, feature = "it_test"))]
+#[cfg(test)]
 #[rstest]
 #[tokio::test]
 async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {

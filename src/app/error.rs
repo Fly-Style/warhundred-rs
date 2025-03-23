@@ -12,16 +12,15 @@ pub enum AppError {
     #[error("Player with nickname {0} not found")]
     PlayerNotFound(String),
     //endregion
-    
+
     //region database errors
     #[error("General database error happened during the query: {0}")]
     QueryError(String),
     #[error("Can't execute transaction: {0}")]
     TransactionError(String),
     //endregion
-    
     #[error("Can't parse request body: {0}")]
-    BodyParsingError(String)
+    BodyParsingError(String),
 }
 
 // TODO: remove the detailed error explanation from IntoResponse. Just StatusCode is enough.
