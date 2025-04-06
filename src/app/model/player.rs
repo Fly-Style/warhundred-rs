@@ -1,4 +1,3 @@
-use axum_login::AuthUser;
 use chrono::naive::NaiveDateTime;
 use diesel::prelude::*;
 use std::fmt::Debug;
@@ -64,17 +63,5 @@ impl Debug for Player {
             .field("last_login_time", &self.last_login_time)
             .field("guild_id", &self.guild_id)
             .finish()
-    }
-}
-
-impl AuthUser for Player {
-    type Id = String;
-
-    fn id(&self) -> Self::Id {
-        self.nickname.clone()
-    }
-
-    fn session_auth_hash(&self) -> &[u8] {
-        self.nickname.as_bytes()
     }
 }

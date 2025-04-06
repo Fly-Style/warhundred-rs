@@ -36,7 +36,12 @@ pub(crate) async fn register(
     } = state;
 
     debug!("Registering player: {:?}", new_player);
+    
+    if new_player.username.is_empty() || new_player.password.is_empty() {
+        return Err(AppError::MissedCredentials);
+    }
 
+    let nickname = new_player.username.clone();
     let new_player = Player {
         nickname: new_player.username,
         email: new_player.email,
@@ -45,7 +50,10 @@ pub(crate) async fn register(
         ..Player::default()
     };
 
-    let user = player_middleware.register_player(new_player).await?;
+    let user = player_middleware
+        .register_player(new_player)
+        .await
+        .map_err(|_| AppError::PlayerCannotRegister(nickname))?;
 
     Ok(Json(RegisterPlayerResponse {
         nickname: user.nickname,
@@ -82,7 +90,7 @@ pub(crate) async fn login(
         // Send the authorized token
         Ok(Json(LoginPlayerResponse {
             access_token: token,
-            token_type: AUTH_TOKEN_TYPE.to_string(),
+            nickname: user.nickname,
         }))
     } else {
         // If the user is not found, return an error

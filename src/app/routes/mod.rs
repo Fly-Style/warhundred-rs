@@ -24,5 +24,5 @@ pub struct LoginPlayerRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginPlayerResponse {
     access_token: String,
-    token_type: String,
+    nickname: String,
 }

@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS player_attributes
     valor      INTEGER NOT NULL                                    DEFAULT 0
 );
 
-CREATE TABLE player_class_progress
+CREATE TABLE IF NOT EXISTS player_class_progress
 (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     player_id            INTEGER NOT NULL,
@@ -95,10 +95,11 @@ CREATE TABLE IF NOT EXISTS player_class
     class_name           VARCHAR(8) NOT NULL,
     class_spec_one_name  VARCHAR(32),
     class_spec_two_name  VARCHAR(32),
-    class_spec_tree_name VARCHAR(32)
+    class_spec_tree_name VARCHAR(32),
+    UNIQUE (class_id)
 );
 
-INSERT INTO player_class
+INSERT OR IGNORE INTO player_class
 VALUES (0, 'no-class', NULL, NULL, NULL),
        (1, 'Warrior', 'One-handed weapons', 'Two-handed weapons', 'Shield'),
        (2, 'Archer', 'Bow', 'Crossbow', 'Dexterity'),
@@ -112,11 +113,12 @@ CREATE TABLE IF NOT EXISTS player_experience_table
     up    INTEGER NOT NULL,             -- 'up' number within the level
     level INTEGER NOT NULL,             -- level
     attrs INTEGER NOT NULL,             -- attributes point granted by reaching the up
-    money INTEGER NOT NULL              -- attributes point granted by reaching the up
+    money INTEGER NOT NULL,             -- attributes point granted by reaching the up
+    UNIQUE (exp)
 );
 
 -- TODO: fetch into some cache during the server start
-INSERT INTO player_experience_table
+INSERT OR IGNORE INTO player_experience_table
 VALUES (0, 0, 0, 3, 50),
        (25, 0, 1, 3, 100),
        (100, 1, 1, 1, 100),
@@ -138,10 +140,11 @@ CREATE TABLE IF NOT EXISTS player_rank_table
     rank_name_FR    TEXT                NOT NULL,
     rank_name_UA    TEXT                NOT NULL,
     rank_pic_url_EN TEXT DEFAULT NULL,
-    rank_pic_url_FR TEXT DEFAULT NULL
+    rank_pic_url_FR TEXT DEFAULT NULL,
+    UNIQUE (id)
 );
 
-INSERT INTO player_rank_table (id, valor, min_level, rank_name_EN, rank_name_FR, rank_name_UA)
+INSERT OR IGNORE INTO player_rank_table (id, valor, min_level, rank_name_EN, rank_name_FR, rank_name_UA)
 VALUES (1, 0, 0, 'Recruit', 'Recruter', 'Рекрут'),
        (2, 5, 2, 'Rookie', 'Débutant', 'Новобранец'),
        (3, 10, 3, 'Soldier', 'Soldat', 'Солдат'),
@@ -222,20 +225,21 @@ CREATE TABLE IF NOT EXISTS bot
 
 --- BATTLE ---
 
-CREATE TABLE factions
+CREATE TABLE IF NOT EXISTS factions
 (
     id   INTEGER PRIMARY KEY NOT NULL,
-    name VARCHAR(3)          NOT NULL
+    name VARCHAR(3)          NOT NULL,
+    UNIQUE (id)
 );
 
-INSERT INTO factions
+INSERT OR IGNORE INTO factions
 VALUES (0, 'en'),
        (1, 'fr'),
        (2, 'bots');
 
 
 -- Maximum - 32 players/bots per battle are allowed. Battle record will be stored AFTER the battle is finished.
-CREATE TABLE battle
+CREATE TABLE IF NOT EXISTS battle
 (
     id         INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     start_time TIMESTAMP                         NOT NULL,
@@ -243,7 +247,7 @@ CREATE TABLE battle
     winner     INTEGER REFERENCES factions (id)  NOT NULL
 );
 
-CREATE TABLE battle_participant
+CREATE TABLE IF NOT EXISTS battle_participant
 (
     battle_id      INTEGER PRIMARY KEY            NOT NULL REFERENCES battle (id),
     player_id      INTEGER REFERENCES player (id) NOT NULL,
@@ -254,7 +258,7 @@ CREATE TABLE battle_participant
     gained_valor   BOOLEAN                        NOT NULL
 );
 
-CREATE TABLE battle_log
+CREATE TABLE IF NOT EXISTS battle_log
 (
     id  INTEGER PRIMARY KEY REFERENCES battle (id) NOT NULL,
     log TEXT                                       NOT NULL

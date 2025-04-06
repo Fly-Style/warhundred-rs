@@ -11,15 +11,17 @@ axum-extra = { version = "0.10.1", features = ["cookie", "typed-header"] }
 chrono = "0.4.40"
 deadpool-diesel = { version = "0.6", features = ["sqlite", "rt_tokio_1", "tracing"] }
 diesel = { version = "2.2", features = ["chrono", "sqlite", "returning_clauses_for_sqlite_3_35"] }
+diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"
-grid = "0.11.0" # Don't updaete the version, 0.12.0 has a breaking changes
+grid = "0.11.0" # Don't update the version, 0.12.0 has a breaking changes
 jsonwebtoken = "9.3.1"
 lazy_static = "1.5.0"
 mime = "0.3.17"
 password-auth = "1.0"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0"
+serde_with_macros = "3.12.0"
 tokio = { version = "1", features = ["full"] }
 tower-http = { version = "0.6", features = ["fs", "trace", "cors"] }
 thiserror = "2.0.12"
