@@ -1,6 +1,6 @@
-use crate::app_state::AppState;
+use crate::app_state::{AppState, Claims, Keys, JWT_AUTH_SECRET};
 use crate::error::{AppError, Result};
-use crate::model::player::{Credentials, Player};
+use crate::model::player::Player;
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
 };
@@ -8,10 +8,17 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::{Json, Router};
-use axum_login::AuthnBackend;
 use chrono::prelude::Utc;
+use jsonwebtoken::Algorithm::HS512;
+use jsonwebtoken::Header;
+use std::sync::LazyLock;
 use tower_http::services::ServeDir;
 use tracing::debug;
+
+pub const TOKEN_EXPIRATION_OFFSET: i64 = 60 * 60 * 24 * 30; // 30 days
+pub const AUTH_TOKEN_TYPE: &str = "Bearer ";
+
+static KEYS: LazyLock<Keys> = LazyLock::new(|| Keys::new(JWT_AUTH_SECRET.as_bytes()));
 
 pub fn root_router() -> Router<AppState> {
     Router::new()
@@ -38,31 +45,47 @@ pub(crate) async fn register(
         ..Player::default()
     };
 
-    let player = player_middleware.register_player(new_player).await?;
+    let user = player_middleware.register_player(new_player).await?;
 
     Ok(Json(RegisterPlayerResponse {
-        nickname: player.nickname,
+        nickname: user.nickname,
         registered: true,
     }))
 }
 
 pub(crate) async fn login(
     State(state): State<AppState>,
-    Json(extractor): Json<LoginPlayerRequest>,
-) -> Result<impl IntoResponse> {
-    let cred = Credentials {
-        username: extractor.username.clone(),
-        password: extractor.password,
-    };
-    let auth_result = state.authenticate(cred).await?;
+    Json(payload): Json<LoginPlayerRequest>,
+) -> Result<Json<LoginPlayerResponse>> {
+    let AppState {
+        player_middleware, ..
+    } = state;
+    // Check if the user sent the credentials
+    if payload.username.is_empty() || payload.password.is_empty() {
+        return Err(AppError::MissedCredentials);
+    }
 
-    if let Some(player) = auth_result {
-        debug!("Authenticating player: {:?} - success", extractor.username);
+    let username = payload.username.clone();
+
+    if let Ok(user) = player_middleware.get_player_by_nick(payload.username).await {
+        password_auth::verify_password(payload.password, user.password.as_ref())
+            .map_err(|_| AppError::WrongCredentials(username))?;
+
+        let claims = Claims {
+            sub: "alex.syrotenko.official@gmail.com".to_owned(),
+            exp: (Utc::now().timestamp() + TOKEN_EXPIRATION_OFFSET) as usize,
+        };
+        // Create the authorization token
+        let token = jsonwebtoken::encode(&Header::new(HS512), &claims, &KEYS.encoding)
+            .map_err(|_| AppError::TokenCreation)?;
+
+        // Send the authorized token
         Ok(Json(LoginPlayerResponse {
-            nickname: player.nickname,
-            logged_in: true,
+            access_token: token,
+            token_type: AUTH_TOKEN_TYPE.to_string(),
         }))
     } else {
-        Err(AppError::PlayerNotFound(extractor.username))
+        // If the user is not found, return an error
+        Err(AppError::PlayerNotFound(username))
     }
 }

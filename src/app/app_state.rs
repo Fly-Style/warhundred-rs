@@ -1,11 +1,19 @@
 use crate::app::middleware::player_middleware::PlayerMiddleware;
 use crate::error::AppError;
-use crate::error::AppError::PlayerNotFound;
-use crate::model::player::{Credentials, Player};
-use async_trait::async_trait;
-use axum_login::{AuthnBackend, UserId};
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
+use axum::RequestPartsExt;
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 use deadpool_diesel::sqlite::Pool;
+use jsonwebtoken::Algorithm::HS512;
+use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+
+pub const JWT_AUTH_SECRET: &str = "1vTDxVKBx6UMSwvYoRGMokJy3dTPrhSVwsSu5yCoPexukstyMtSjEK3MPUpF9t1";
 
 #[derive(Clone)]
 pub struct AppState {
@@ -13,36 +21,46 @@ pub struct AppState {
     pub player_middleware: Arc<PlayerMiddleware>,
 }
 
-#[async_trait]
-impl AuthnBackend for AppState {
-    type User = Player;
-    type Credentials = Credentials;
-    type Error = AppError;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    pub(crate) sub: String,
+    pub(crate) exp: usize,
+}
 
-    async fn authenticate(
-        &self,
-        Credentials { username, password }: Self::Credentials,
-    ) -> Result<Option<Self::User>, Self::Error> {
-        let result = self.player_middleware.get_player_by_nick(username).await;
-        match result {
-            Ok(player) => {
-                match password_auth::verify_password(password, player.password.as_ref()) {
-                    Ok(_) => Ok(Some(player)),
-                    Err(_) => Err(PlayerNotFound(player.nickname)),
-                }
-            }
-            Err(e) => Err(e),
-        }
+impl<S> FromRequestParts<S> for Claims
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        // Extract the token from the authorization header
+        let TypedHeader(Authorization(bearer)) = parts
+            .extract::<TypedHeader<Authorization<Bearer>>>()
+            .await
+            .map_err(|_| AppError::InvalidToken)?;
+        // Decode the user data
+        let token_data = decode::<Claims>(
+            bearer.token(),
+            &DecodingKey::from_secret(JWT_AUTH_SECRET.as_bytes()),
+            &Validation::new(HS512),
+        )
+        .map_err(|_| AppError::InvalidToken)?;
+
+        Ok(token_data.claims)
     }
+}
 
-    async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
-        let result = self
-            .player_middleware
-            .get_player_by_nick(user_id.into())
-            .await;
-        match result {
-            Ok(player) => Ok(Some(player)),
-            Err(e) => Err(e),
+pub struct Keys {
+    pub(crate) encoding: EncodingKey,
+    pub(crate) decoding: DecodingKey,
+}
+
+impl Keys {
+    pub(crate) fn new(secret: &[u8]) -> Self {
+        Self {
+            encoding: EncodingKey::from_secret(secret),
+            decoding: DecodingKey::from_secret(secret),
         }
     }
 }

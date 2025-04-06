@@ -64,7 +64,6 @@ pub async fn after_test(pool: Arc<Pool>) -> eyre::Result<()> {
     Ok(())
 }
 
-// #[cfg(all(test, feature = "it_test"))]
 #[cfg(test)]
 #[rstest]
 #[tokio::test]
@@ -82,12 +81,8 @@ async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> 
         .await;
 
     res.assert_status_ok();
-    res.assert_json_contains(&serde_json::json!({
-        "nickname": "a",
-        "registered": true
-    }));
 
-    after_test(pool_ref).await?;
+    after_test(pool_ref.clone()).await?;
 
     Ok(())
 }

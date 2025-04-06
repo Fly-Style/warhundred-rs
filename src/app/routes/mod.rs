@@ -23,6 +23,6 @@ pub struct LoginPlayerRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginPlayerResponse {
-    nickname: String,
-    logged_in: bool,
+    access_token: String,
+    token_type: String,
 }
