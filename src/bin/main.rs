@@ -11,11 +11,12 @@ use tower_http::{
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 use warhundred_rs::app::db::{migration_connection, run_migrations};
 use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
+use warhundred_rs::app::redis::RedisConnectionManager;
 use warhundred_rs::app_state::AppState;
 use warhundred_rs::routes::root_routes::root_router;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> eyre::Result<()> {
     dotenv().ok();
 
     let subscriber = FmtSubscriber::builder()
@@ -26,6 +27,9 @@ async fn main() {
     tracing::info!("Initializing the server.");
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let redis_uri = env::var("REDIS_URL").expect("REDIS_URL must be set");
+
+    // Setup database connection pool
     {
         // Run migrations
         let connection = &mut migration_connection(database_url.as_ref());
@@ -34,18 +38,38 @@ async fn main() {
     }
 
     let manager = Manager::new(database_url, deadpool_diesel::Runtime::Tokio1);
-    let pool = Arc::new(Pool::builder(manager).build().unwrap());
+    let db_pool = Arc::new(Pool::builder(manager).build()?);
 
-    let player_middleware = Arc::new(PlayerMiddleware::builder().pool(pool.clone()).build());
+    // Setup Redis connection pool
+    let cache_pool = {
+        let manager = RedisConnectionManager::new(redis_uri).expect("Unable connect to cache");
+        Arc::new(
+            bb8::Pool::builder()
+                .max_size(16)
+                .build(manager)
+                .await
+                .map_err(eyre::Report::from)?,
+        )
+    };
+
+    // Setup HTTP routes
+    let player_middleware = Arc::new(
+        PlayerMiddleware::builder()
+            .db_pool(db_pool.clone())
+            .cache_pool(cache_pool.clone())
+            .build(),
+    );
 
     let state = AppState {
-        pool,
+        db_pool,
+        cache_pool,
         player_middleware,
     };
 
+    // Setup HTTP server
     let app = root_router().with_state(state);
 
-    // TODO: understand how to host the index file + tree-shacked directory
+    // TODO: use nginx or similar for production to host static files
     let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
 
     tracing::info!("Starting server on port 8000");
@@ -55,6 +79,7 @@ async fn main() {
         app.layer(CorsLayer::new().allow_origin(Any))
             .layer(TraceLayer::new_for_http()),
     )
-    .await
-    .unwrap();
+    .await?;
+
+    Ok(())
 }

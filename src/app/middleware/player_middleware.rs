@@ -1,3 +1,4 @@
+use crate::app::redis::{CacheKey, RedisConnectionManager};
 use crate::error::AppError::{PlayerNotFound, QueryError, TransactionError};
 use crate::error::{AppError, Result};
 use crate::model::player::{Player, PlayerAttributes};
@@ -5,9 +6,9 @@ use crate::schema::player::dsl::player;
 use crate::schema::player::nickname;
 use crate::schema::player_attributes::dsl::player_attributes;
 use bon::Builder;
-use deadpool_diesel::sqlite::Pool;
 use diesel::QueryDsl;
 use diesel::{Connection, ExpressionMethods, RunQueryDsl, SelectableHelper};
+use redis::AsyncCommands;
 use std::sync::Arc;
 use tracing::error;
 
@@ -15,14 +16,15 @@ pub type PlayerWithAttributes = (Player, PlayerAttributes);
 
 #[derive(Builder)]
 pub struct PlayerMiddleware {
-    pub pool: Arc<Pool>,
+    pub db_pool: Arc<deadpool_diesel::sqlite::Pool>,
+    pub cache_pool: Arc<bb8::Pool<RedisConnectionManager>>,
 }
 
 impl PlayerMiddleware {
     pub async fn register_player(&self, new_player: Player) -> Result<Player> {
         use crate::schema::player::dsl::*;
 
-        let conn = &self.pool.clone().get().await.unwrap();
+        let conn = &self.db_pool.clone().get().await.unwrap();
         let nick = new_player.nickname.clone();
         let res = conn
             .interact(move |conn| {
@@ -48,7 +50,7 @@ impl PlayerMiddleware {
     pub async fn register_player_transaction(&self, new_player: Player) -> Result<Player> {
         use crate::schema::player::dsl::*;
 
-        let conn = self.pool.clone().get().await.unwrap();
+        let conn = self.db_pool.clone().get().await.unwrap();
         let nick = new_player.nickname.clone();
         let tx_res = conn
             .interact(move |conn| {
@@ -80,7 +82,7 @@ impl PlayerMiddleware {
     }
 
     pub async fn get_player_by_nick(&self, nick: String) -> Result<Player> {
-        let conn = self.pool.clone().get().await.unwrap();
+        let conn = self.db_pool.clone().get().await.unwrap();
         let _nick: String = nick.clone();
 
         let query_result = conn
@@ -95,7 +97,7 @@ impl PlayerMiddleware {
     }
 
     pub async fn get_full_player_info_by_nick(&self, nick: String) -> Result<PlayerWithAttributes> {
-        let conn = self.pool.clone().get().await.unwrap();
+        let conn = self.db_pool.clone().get().await.unwrap();
         let _nick: String = nick.clone();
 
         let query_result = conn
@@ -114,10 +116,37 @@ impl PlayerMiddleware {
         }
     }
 
+    pub async fn store_player_session_token(&self, p_id: i64, token: String) -> Result<()> {
+        let mut conn = self.cache_pool.get().await.unwrap();
+        let set_member = format!("{}:{}", p_id, token);
+        conn.sadd::<&str, &str, ()>(CacheKey::PlayerSession.as_ref(), set_member.as_str())
+            .await
+            .map_err(|e| {
+                error!("Error during storing player session token: {:?}", e);
+                AppError::CacheError(e.to_string())
+            })
+    }
+
+    pub async fn check_player_session_token(
+        &self,
+        p_id: i64,
+        token_to_compare: String,
+    ) -> Result<bool> {
+        let mut conn = self.cache_pool.get().await.unwrap();
+        let set_member = format!("{}:{}", p_id, token_to_compare);
+        Ok(1 == conn
+            .sismember::<&str, &str, i64>(CacheKey::PlayerSession.as_ref(), set_member.as_str())
+            .await
+            .map_err(|e| {
+                error!("Error during storing player session token: {:?}", e);
+                AppError::CacheError(e.to_string())
+            })?)
+    }
+
     // Note: just an example of inner JOIN and transaction
     pub async fn inc_valor(&self, p_id: i32, rank_up: bool) -> Result<()> {
         use crate::schema::player_attributes::dsl::*;
-        let conn = &self.pool.get().await.unwrap();
+        let conn = &self.db_pool.get().await.unwrap();
         let tx_res = conn
             .interact(move |conn| {
                 conn.transaction(|conn| {

@@ -25,6 +25,7 @@ pub fn root_router() -> Router<AppState> {
         .route_service("/", ServeDir::new("public"))
         .route("/register", post(register))
         .route("/login", post(login))
+        .route("/logout", post(logout))
 }
 
 pub(crate) async fn register(
@@ -62,6 +63,43 @@ pub(crate) async fn register(
 }
 
 pub(crate) async fn login(
+    State(state): State<AppState>,
+    Json(payload): Json<LoginPlayerRequest>,
+) -> Result<Json<LoginPlayerResponse>> {
+    let AppState {
+        player_middleware, ..
+    } = state;
+    // Check if the user sent the credentials
+    if payload.username.is_empty() || payload.password.is_empty() {
+        return Err(AppError::MissedCredentials);
+    }
+
+    let username = payload.username.clone();
+
+    if let Ok(user) = player_middleware.get_player_by_nick(payload.username).await {
+        password_auth::verify_password(payload.password, user.password.as_ref())
+            .map_err(|_| AppError::WrongCredentials(username))?;
+
+        let claims = Claims {
+            sub: "alex.syrotenko.official@gmail.com".to_owned(),
+            exp: (Utc::now().timestamp() + TOKEN_EXPIRATION_OFFSET) as usize,
+        };
+        // Create the authorization token
+        let token = jsonwebtoken::encode(&Header::new(HS512), &claims, &KEYS.encoding)
+            .map_err(|_| AppError::TokenCreation)?;
+
+        // Send the authorized token
+        Ok(Json(LoginPlayerResponse {
+            access_token: token,
+            nickname: user.nickname,
+        }))
+    } else {
+        // If the user is not found, return an error
+        Err(AppError::PlayerNotFound(username))
+    }
+}
+
+pub(crate) async fn logout(
     State(state): State<AppState>,
     Json(payload): Json<LoginPlayerRequest>,
 ) -> Result<Json<LoginPlayerResponse>> {

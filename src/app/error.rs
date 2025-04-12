@@ -27,6 +27,8 @@ pub enum AppError {
     QueryError(String),
     #[error("Can't execute transaction: {0}")]
     TransactionError(String),
+    #[error("Can't cooperate with cache: {0}")]
+    CacheError(String),
     //endregion
     #[error("Can't parse request body: {0}")]
     BodyParsingError(String),
@@ -44,7 +46,7 @@ impl IntoResponse for AppError {
             Self::MissedCredentials | Self::TokenCreation => {
                 (StatusCode::BAD_REQUEST, self.to_string()).into_response()
             }
-            Self::QueryError(e) | Self::TransactionError(e) => {
+            Self::QueryError(e) | Self::TransactionError(e) | Self::CacheError(e) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
             }
             Self::InvalidToken => (

@@ -6,3 +6,4 @@ pub mod model;
 pub mod routes;
 pub mod schema;
 pub mod db;
+pub mod redis;

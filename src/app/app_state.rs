@@ -1,4 +1,5 @@
 use crate::app::middleware::player_middleware::PlayerMiddleware;
+use crate::app::redis::RedisConnectionManager;
 use crate::error::AppError;
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
@@ -7,7 +8,6 @@ use axum_extra::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
 };
-use deadpool_diesel::sqlite::Pool;
 use jsonwebtoken::Algorithm::HS512;
 use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,8 @@ pub const JWT_AUTH_SECRET: &str = "1vTDxVKBx6UMSwvYoRGMokJy3dTPrhSVwsSu5yCoPexuk
 
 #[derive(Clone)]
 pub struct AppState {
-    pub pool: Arc<Pool>,
+    pub db_pool: Arc<deadpool_diesel::sqlite::Pool>,
+    pub cache_pool: Arc<bb8::Pool<RedisConnectionManager>>,
     pub player_middleware: Arc<PlayerMiddleware>,
 }
 

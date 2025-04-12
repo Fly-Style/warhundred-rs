@@ -51,11 +51,37 @@ function useProvideAuth() {
         }).catch(err => setErrors(err));
     }
 
-    function logout(username) {
+    function logout() {
+        setIsLoading(true);
         setErrors([]);
-        axios.post("/logout", {"username": username}, {headers: {'Content-Type': 'application/json'}})
-            .then(_ => setUser(null))
-            .catch(err => setErrors(err))
+
+        // Get the current user's information if needed for the API call
+        const currentUser = user;
+
+        // Remove the token from localStorage immediately
+        localStorage.removeItem(TOKEN_KEY);
+
+        // If your backend requires a logout request, you can still make it
+        if (currentUser) {
+            axios.post(
+                "/logout",
+                {"username": currentUser},
+                {headers: {'Content-Type': 'application/json'}}
+            )
+                .then(() => {
+                    setUser(null);
+                })
+                .catch(err => {
+                    setErrors(err);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        } else {
+            // If no user is set, just complete the logout process
+            setUser(null);
+            setIsLoading(false);
+        }
     }
 
     return {

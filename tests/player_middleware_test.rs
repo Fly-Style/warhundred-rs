@@ -1,8 +1,9 @@
-use crate::common::ctx;
+use crate::common::{ctx, STD_SQLITE_TEST_URL};
 use axum::http;
 use axum_test::TestServer;
 use deadpool_diesel::sqlite::Pool;
 use diesel::RunQueryDsl;
+use dotenvy::dotenv;
 use http::header::CONTENT_TYPE;
 use rstest::{fixture, rstest};
 use std::sync::Arc;
@@ -11,8 +12,6 @@ use warhundred_rs::routes::root_routes::root_router;
 
 mod common;
 
-pub const TEST_IN_MEMORY_DB: &str = "sqlite://:memory:";
-
 struct App {
     pool_ref: Arc<Pool>,
     server: TestServer,
@@ -20,22 +19,31 @@ struct App {
 
 #[fixture]
 pub async fn app() -> eyre::Result<App> {
+    dotenv().ok();
+
     let subscriber = FmtSubscriber::builder()
         .with_env_filter(EnvFilter::from_default_env())
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    let sqlite_url =
-        std::env::var("DATABASE_URL").unwrap_or_else(|_| TEST_IN_MEMORY_DB.to_string());
-    // std::env::var("SQLITE_URL").unwrap_or_else(|_| "file::memory:?cache=shared".to_string());
+    #[cfg(not(feature = "local"))]
+    let redis = start_containers().await?;
 
-    let state = ctx(sqlite_url.as_ref()).await?;
-    let pool_ref = Arc::clone(&state.pool);
-    let conn = state.pool.get().await?;
+    let sqlite_url =
+        std::env::var("DATABASE_URL").unwrap_or_else(|_| STD_SQLITE_TEST_URL.to_string());
+
+    #[cfg(feature = "local")]
+    let redis_url: String = std::env::var("REDIS_URL")?;
+    #[cfg(not(feature = "local"))]
+    let redis_url: String = redis_conn_uri(&redis).await?;
+
+    let state = ctx(sqlite_url.as_ref(), redis_url.as_str()).await?;
+    let pool_ref = Arc::clone(&state.db_pool);
+    let conn = state.db_pool.get().await?;
 
     conn.interact(|conn| {
         diesel::sql_query(
-            "CREATE TABLE player (\
+            "CREATE TABLE IF NOT EXISTS player (\
             id INTEGER PRIMARY KEY AUTOINCREMENT, \
             nickname TEXT NOT NULL, \
             email TEXT NOT NULL, \

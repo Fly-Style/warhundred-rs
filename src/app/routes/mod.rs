@@ -26,3 +26,13 @@ pub struct LoginPlayerResponse {
     access_token: String,
     nickname: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct LogoutPlayerRequest {
+    access_token: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LogoutPlayerResponse {
+    ok: bool
+}
