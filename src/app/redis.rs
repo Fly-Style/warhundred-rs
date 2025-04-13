@@ -50,7 +50,7 @@ pub enum CacheKey {
 impl AsRef<str> for CacheKey {
     fn as_ref(&self) -> &str {
         match self {
-            CacheKey::PlayerSession => "player_session"
+            CacheKey::PlayerSession => "player_session",
         }
     }
 }

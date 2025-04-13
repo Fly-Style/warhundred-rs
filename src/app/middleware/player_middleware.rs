@@ -142,7 +142,7 @@ impl PlayerMiddleware {
                 AppError::CacheError(e.to_string())
             })?)
     }
-    
+
     pub async fn remove_player_session_token(&self, nick: &str, access_token: &str) -> Result<()> {
         let mut conn = self.cache_pool.get().await.unwrap();
         let set_member = format!("{}:{}", nick, access_token);

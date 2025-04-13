@@ -35,5 +35,5 @@ pub struct LogoutPlayerRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LogoutPlayerResponse {
-    ok: bool
+    ok: bool,
 }

@@ -1,9 +1,9 @@
 pub mod app_state;
+pub mod db;
 pub mod error;
 mod grid;
 pub mod middleware;
 pub mod model;
+pub mod redis;
 pub mod routes;
 pub mod schema;
-pub mod db;
-pub mod redis;

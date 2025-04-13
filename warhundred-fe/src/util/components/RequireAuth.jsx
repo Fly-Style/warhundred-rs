@@ -4,8 +4,8 @@ import {useAuth} from "../../context/AuthProvider.jsx";
 
 export const RequireAuth = () => {
     const auth = useAuth();
-    console.log(auth);
     return (
+        // <MainPage/>
         auth?.user ? <MainPage/> : <EntryPage/>
     );
 }
