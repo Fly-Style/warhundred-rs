@@ -59,13 +59,16 @@ function useProvideAuth() {
         const currentUser = user;
 
         // Remove the token from localStorage immediately
-        localStorage.removeItem(TOKEN_KEY);
+        const accessToken = localStorage.getItem(TOKEN_KEY);
+        if (accessToken !== undefined && accessToken !== null) {
+            localStorage.removeItem(TOKEN_KEY);
+        }
 
         // If your backend requires a logout request, you can still make it
         if (currentUser) {
             axios.post(
                 "/logout",
-                {"username": currentUser},
+                {"nickname": currentUser, "access_token": accessToken},
                 {headers: {'Content-Type': 'application/json'}}
             )
                 .then(() => {

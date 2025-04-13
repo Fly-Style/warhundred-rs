@@ -29,6 +29,7 @@ pub struct LoginPlayerResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct LogoutPlayerRequest {
+    nickname: String,
     access_token: String,
 }
 

@@ -3,7 +3,7 @@ name = "warhundred-rs"
 version = "0.1.0"
 authors = ["Sasha Syrotenko <alex.syrotenko.official@gmail.com>"]
 edition = "2021"
-rust-version = "1.82"
+rust-version = "1.84.1"
 
 [dependencies]
 axum = "0.8.1"

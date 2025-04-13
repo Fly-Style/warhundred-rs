@@ -2,7 +2,8 @@ use crate::app_state::{AppState, Claims, Keys, JWT_AUTH_SECRET};
 use crate::error::{AppError, Result};
 use crate::model::player::Player;
 use crate::routes::{
-    LoginPlayerRequest, LoginPlayerResponse, RegisterPlayerRequest, RegisterPlayerResponse,
+    LoginPlayerRequest, LoginPlayerResponse, LogoutPlayerRequest, LogoutPlayerResponse,
+    RegisterPlayerRequest, RegisterPlayerResponse,
 };
 use axum::extract::State;
 use axum::response::IntoResponse;
@@ -13,7 +14,7 @@ use jsonwebtoken::Algorithm::HS512;
 use jsonwebtoken::Header;
 use std::sync::LazyLock;
 use tower_http::services::ServeDir;
-use tracing::debug;
+use tracing::{debug, warn};
 
 pub const TOKEN_EXPIRATION_OFFSET: i64 = 60 * 60 * 24 * 30; // 30 days
 pub const AUTH_TOKEN_TYPE: &str = "Bearer ";
@@ -37,7 +38,7 @@ pub(crate) async fn register(
     } = state;
 
     debug!("Registering player: {:?}", new_player);
-    
+
     if new_player.username.is_empty() || new_player.password.is_empty() {
         return Err(AppError::MissedCredentials);
     }
@@ -74,64 +75,59 @@ pub(crate) async fn login(
         return Err(AppError::MissedCredentials);
     }
 
-    let username = payload.username.clone();
+    let nickname = payload.username.clone();
 
     if let Ok(user) = player_middleware.get_player_by_nick(payload.username).await {
         password_auth::verify_password(payload.password, user.password.as_ref())
-            .map_err(|_| AppError::WrongCredentials(username))?;
+            .map_err(|_| AppError::WrongCredentials(nickname.clone()))?;
 
         let claims = Claims {
             sub: "alex.syrotenko.official@gmail.com".to_owned(),
             exp: (Utc::now().timestamp() + TOKEN_EXPIRATION_OFFSET) as usize,
         };
         // Create the authorization token
-        let token = jsonwebtoken::encode(&Header::new(HS512), &claims, &KEYS.encoding)
+        let access_token = jsonwebtoken::encode(&Header::new(HS512), &claims, &KEYS.encoding)
             .map_err(|_| AppError::TokenCreation)?;
+
+        player_middleware
+            .store_player_session_token(nickname.as_str(), access_token.clone())
+            .await?;
 
         // Send the authorized token
         Ok(Json(LoginPlayerResponse {
-            access_token: token,
-            nickname: user.nickname,
+            access_token,
+            nickname,
         }))
     } else {
         // If the user is not found, return an error
-        Err(AppError::PlayerNotFound(username))
+        Err(AppError::PlayerNotFound(nickname))
     }
 }
 
 pub(crate) async fn logout(
     State(state): State<AppState>,
-    Json(payload): Json<LoginPlayerRequest>,
-) -> Result<Json<LoginPlayerResponse>> {
+    Json(payload): Json<LogoutPlayerRequest>,
+) -> Result<Json<LogoutPlayerResponse>> {
     let AppState {
         player_middleware, ..
     } = state;
     // Check if the user sent the credentials
-    if payload.username.is_empty() || payload.password.is_empty() {
+    if payload.access_token.is_empty() || payload.nickname.is_empty() {
         return Err(AppError::MissedCredentials);
     }
 
-    let username = payload.username.clone();
+    let LogoutPlayerRequest {
+        nickname,
+        access_token,
+    } = payload;
 
-    if let Ok(user) = player_middleware.get_player_by_nick(payload.username).await {
-        password_auth::verify_password(payload.password, user.password.as_ref())
-            .map_err(|_| AppError::WrongCredentials(username))?;
-
-        let claims = Claims {
-            sub: "alex.syrotenko.official@gmail.com".to_owned(),
-            exp: (Utc::now().timestamp() + TOKEN_EXPIRATION_OFFSET) as usize,
-        };
-        // Create the authorization token
-        let token = jsonwebtoken::encode(&Header::new(HS512), &claims, &KEYS.encoding)
-            .map_err(|_| AppError::TokenCreation)?;
-
-        // Send the authorized token
-        Ok(Json(LoginPlayerResponse {
-            access_token: token,
-            nickname: user.nickname,
-        }))
-    } else {
-        // If the user is not found, return an error
-        Err(AppError::PlayerNotFound(username))
+    if let Err(_err) = player_middleware
+        .remove_player_session_token(nickname.as_str(), access_token.as_str())
+        .await
+    {
+        warn!("Error during player logout: {:?}", _err);
+        return Ok(Json(LogoutPlayerResponse { ok: false }));
     }
+
+    Ok(Json(LogoutPlayerResponse { ok: true }))
 }

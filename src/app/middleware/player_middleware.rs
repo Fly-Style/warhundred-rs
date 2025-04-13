@@ -116,9 +116,9 @@ impl PlayerMiddleware {
         }
     }
 
-    pub async fn store_player_session_token(&self, p_id: i64, token: String) -> Result<()> {
+    pub async fn store_player_session_token(&self, nick: &str, token: String) -> Result<()> {
         let mut conn = self.cache_pool.get().await.unwrap();
-        let set_member = format!("{}:{}", p_id, token);
+        let set_member = format!("{}:{}", nick, token);
         conn.sadd::<&str, &str, ()>(CacheKey::PlayerSession.as_ref(), set_member.as_str())
             .await
             .map_err(|e| {
@@ -129,11 +129,11 @@ impl PlayerMiddleware {
 
     pub async fn check_player_session_token(
         &self,
-        p_id: i64,
+        nick: &str,
         token_to_compare: String,
     ) -> Result<bool> {
         let mut conn = self.cache_pool.get().await.unwrap();
-        let set_member = format!("{}:{}", p_id, token_to_compare);
+        let set_member = format!("{}:{}", nick, token_to_compare);
         Ok(1 == conn
             .sismember::<&str, &str, i64>(CacheKey::PlayerSession.as_ref(), set_member.as_str())
             .await
@@ -142,9 +142,20 @@ impl PlayerMiddleware {
                 AppError::CacheError(e.to_string())
             })?)
     }
+    
+    pub async fn remove_player_session_token(&self, nick: &str, access_token: &str) -> Result<()> {
+        let mut conn = self.cache_pool.get().await.unwrap();
+        let set_member = format!("{}:{}", nick, access_token);
+        conn.srem::<&str, &str, ()>(CacheKey::PlayerSession.as_ref(), set_member.as_str())
+            .await
+            .map_err(|e| {
+                error!("Error during removing player session token: {:?}", e);
+                AppError::CacheError(e.to_string())
+            })
+    }
 
     // Note: just an example of inner JOIN and transaction
-    pub async fn inc_valor(&self, p_id: i32, rank_up: bool) -> Result<()> {
+    async fn inc_valor(&self, p_id: i32, rank_up: bool) -> Result<()> {
         use crate::schema::player_attributes::dsl::*;
         let conn = &self.db_pool.get().await.unwrap();
         let tx_res = conn
