@@ -3,11 +3,11 @@ use crate::error::{AppError, Result};
 use crate::model::player::Player;
 use crate::routes::{
     LoginPlayerRequest, LoginPlayerResponse, LogoutPlayerRequest, LogoutPlayerResponse,
-    RegisterPlayerRequest, RegisterPlayerResponse,
+    PlayersInZoneResponse, RegisterPlayerRequest, RegisterPlayerResponse,
 };
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::response::IntoResponse;
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use chrono::prelude::Utc;
 use jsonwebtoken::Algorithm::HS512;
@@ -27,6 +27,7 @@ pub fn root_router() -> Router<AppState> {
         .route("/register", post(register))
         .route("/login", post(login))
         .route("/logout", post(logout))
+        .route("/zone/players", get(players_in_zone))
 }
 
 pub(crate) async fn register(
@@ -130,4 +131,16 @@ pub(crate) async fn logout(
     }
 
     Ok(Json(LogoutPlayerResponse { ok: true }))
+}
+
+pub(crate) async fn players_in_zone(
+    State(state): State<AppState>,
+    Path(zone_id): Path<i64>,
+) -> Result<Json<PlayersInZoneResponse>> {
+    let AppState {
+        cache_middleware, ..
+    } = state;
+    let list = cache_middleware.get_players_in_zone(zone_id).await?;
+
+    Ok(Json(PlayersInZoneResponse { list }))
 }

@@ -123,7 +123,7 @@ impl PlayerMiddleware {
             .await
             .map_err(|e| {
                 error!("Error during storing player session token: {:?}", e);
-                AppError::CacheError(e.to_string())
+                AppError::CacheError(e)
             })
     }
 
@@ -139,7 +139,7 @@ impl PlayerMiddleware {
             .await
             .map_err(|e| {
                 error!("Error during storing player session token: {:?}", e);
-                AppError::CacheError(e.to_string())
+                AppError::CacheError(e)
             })?)
     }
 
@@ -150,7 +150,7 @@ impl PlayerMiddleware {
             .await
             .map_err(|e| {
                 error!("Error during removing player session token: {:?}", e);
-                AppError::CacheError(e.to_string())
+                AppError::CacheError(e)
             })
     }
 

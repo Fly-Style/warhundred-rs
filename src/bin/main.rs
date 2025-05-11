@@ -10,6 +10,7 @@ use tower_http::{
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 use warhundred_rs::app::db::{migration_connection, run_migrations};
+use warhundred_rs::app::middleware::cache_middleware::CacheMiddleware;
 use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
 use warhundred_rs::app::redis::RedisConnectionManager;
 use warhundred_rs::app_state::AppState;
@@ -59,11 +60,17 @@ async fn main() -> eyre::Result<()> {
             .cache_pool(cache_pool.clone())
             .build(),
     );
+    let cache_middleware = Arc::new(
+        CacheMiddleware::builder()
+            .cache_pool(cache_pool.clone())
+            .build(),
+    );
 
     let state = AppState {
         db_pool,
         cache_pool,
         player_middleware,
+        cache_middleware,
     };
 
     // Setup HTTP server

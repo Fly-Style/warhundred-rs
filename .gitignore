@@ -4,7 +4,7 @@
 /target
 /node_modules
 /warhundred-fe/node_modules
-/warhundred-web/public
+/warhundred-fe/pnpm-lock.yaml
 *.sqlite
 test.db
 .DS_Store

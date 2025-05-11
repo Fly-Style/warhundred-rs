@@ -1,5 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use prost::DecodeError;
+use redis::RedisError;
 use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, AppError>;
@@ -27,8 +29,10 @@ pub enum AppError {
     QueryError(String),
     #[error("Can't execute transaction: {0}")]
     TransactionError(String),
-    #[error("Can't cooperate with cache: {0}")]
-    CacheError(String),
+    #[error("Can't cooperate with cache")]
+    CacheError(#[from] RedisError),
+    #[error("Can't cooperate with cache")]
+    EntryDecodeError(#[from] DecodeError),
     //endregion
     #[error("Can't parse request body: {0}")]
     BodyParsingError(String),
@@ -46,10 +50,10 @@ impl IntoResponse for AppError {
             Self::MissedCredentials | Self::TokenCreation => {
                 (StatusCode::BAD_REQUEST, self.to_string()).into_response()
             }
-            Self::QueryError(e) | Self::TransactionError(e) | Self::CacheError(e) => {
+            Self::QueryError(e) | Self::TransactionError(e) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
             }
-            Self::InvalidToken => (
+            AppError::EntryDecodeError(_) | Self::CacheError(_) | Self::InvalidToken => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 StatusCode::INTERNAL_SERVER_ERROR.to_string(),
             )

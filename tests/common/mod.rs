@@ -4,6 +4,7 @@ use std::sync::Arc;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::ContainerAsync;
 use testcontainers_modules::redis::Redis;
+use warhundred_rs::app::middleware::cache_middleware::CacheMiddleware;
 use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
 use warhundred_rs::app::redis::RedisConnectionManager;
 use warhundred_rs::app_state::AppState;
@@ -18,10 +19,16 @@ pub async fn ctx(sqlite_url: &str, redis_url: &str) -> eyre::Result<AppState> {
         let manager = RedisConnectionManager::new(redis_url).expect("Unable connect to cache");
         bb8::Pool::builder().max_size(25).build(manager).await?
     };
+
     Ok(AppState {
         player_middleware: Arc::new(
             PlayerMiddleware::builder()
                 .db_pool(db_pool.clone())
+                .cache_pool(Arc::new(redis_pool.clone()))
+                .build(),
+        ),
+        cache_middleware: Arc::new(
+            CacheMiddleware::builder()
                 .cache_pool(Arc::new(redis_pool.clone()))
                 .build(),
         ),

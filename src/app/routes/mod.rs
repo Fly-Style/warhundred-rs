@@ -1,3 +1,4 @@
+use crate::model::cache::PlayerInZone;
 use serde::{Deserialize, Serialize};
 
 pub mod root_routes;
@@ -9,7 +10,7 @@ pub struct RegisterPlayerRequest {
     password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct RegisterPlayerResponse {
     nickname: String,
     registered: bool,
@@ -21,7 +22,7 @@ pub struct LoginPlayerRequest {
     password: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct LoginPlayerResponse {
     access_token: String,
     nickname: String,
@@ -33,7 +34,12 @@ pub struct LogoutPlayerRequest {
     access_token: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct LogoutPlayerResponse {
     ok: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PlayersInZoneResponse {
+    pub list: Vec<PlayerInZone>,
 }

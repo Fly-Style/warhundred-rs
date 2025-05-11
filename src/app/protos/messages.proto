@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message PlayerSession {
+  int64 id = 1;
+  string nickname = 2;
+  string token = 3;
+  uint32 level = 4;
+  uint32 session_started_at = 5;
+  bool is_in_battle = 6;
+  optional string link_to_battle = 7;
+}

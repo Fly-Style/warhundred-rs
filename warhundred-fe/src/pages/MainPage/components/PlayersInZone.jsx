@@ -15,13 +15,13 @@ export const PlayersInZone = () => {
 
                 // Make API call to get players in the zone
                 // TODO: Make it properly for zone, not for all players online.
-                // const res = (await axios.get('/zone/players'))
+                const res = (await axios.get('/zone/players'))
 
-                // if (response.status === 200) {
-                //     setPlayers(res.data);
-                // } else {
+                if (response.status === 200) {
+                    setPlayers(res.data);
+                } else {
                 setPlayers([...testState]);
-                // }
+                }
             } catch (err) {
                 console.error('Error fetching players in zone:', err);
                 setError('Failed to fetch players in zone');

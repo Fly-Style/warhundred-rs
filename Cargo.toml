@@ -6,6 +6,7 @@ edition = "2021"
 rust-version = "1.84.1"
 
 [dependencies]
+async-trait = "0.1.88"
 axum = "0.8.1"
 axum-extra = { version = "0.10.1", features = ["cookie", "typed-header"] }
 bb8 = "0.8.6"
@@ -21,22 +22,28 @@ jsonwebtoken = "9.3.1"
 lazy_static = "1.5.0"
 mime = "0.3.17"
 password-auth = "1.0"
+prost = { version = "0.13.3", features = ["prost-derive"] }
+prost-derive = "0.13.3"
+prost-types = "0.13.3"
 redis = { version = "0.29.5", features = ["aio", "tokio-comp"] }
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0"
 serde_with_macros = "3.12.0"
+strum = { version = "0.27.1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 tower-http = { version = "0.6", features = ["fs", "trace", "cors"] }
 thiserror = "2.0.12"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-async-trait = "0.1.88"
 
 [dev-dependencies]
 axum-test = { version = "17.2.0" }
 rstest = "0.25.0"
 testcontainers = { version = "0.23.1", features = ["reqwest"] }
 testcontainers-modules = { version = "0.11.5", features = ["redis"] }
+
+[build-dependencies]
+prost-build = "0.13.3"
 
 [[bin]]
 name = "main"

@@ -1,4 +1,4 @@
-use crate::common::{ctx, STD_SQLITE_TEST_URL};
+use crate::common::{ctx, redis_conn_uri, start_containers, STD_SQLITE_TEST_URL};
 use axum::http;
 use axum_test::TestServer;
 use deadpool_diesel::sqlite::Pool;

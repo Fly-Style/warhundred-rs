@@ -12,6 +12,7 @@ use jsonwebtoken::Algorithm::HS512;
 use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use crate::app::middleware::cache_middleware::CacheMiddleware;
 
 pub const JWT_AUTH_SECRET: &str = "1vTDxVKBx6UMSwvYoRGMokJy3dTPrhSVwsSu5yCoPexukstyMtSjEK3MPUpF9t1";
 
@@ -20,6 +21,7 @@ pub struct AppState {
     pub db_pool: Arc<deadpool_diesel::sqlite::Pool>,
     pub cache_pool: Arc<bb8::Pool<RedisConnectionManager>>,
     pub player_middleware: Arc<PlayerMiddleware>,
+    pub cache_middleware: Arc<CacheMiddleware>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
