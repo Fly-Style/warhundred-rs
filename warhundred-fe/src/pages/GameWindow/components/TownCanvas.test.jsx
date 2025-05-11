@@ -43,7 +43,7 @@ describe('TownCanvas', () => {
     // Assert
     expect(BaseCanvas).toHaveBeenCalledWith(
       expect.objectContaining({
-        backgroundColor: 0x87ceeb,
+        backgroundColor: 0x7CAFC2,
         renderContent: expect.any(Function)
       }),
       expect.anything()
