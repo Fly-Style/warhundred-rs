@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 
 // Test data for development and testing
 const testPlayers = [
-  {nickname: "Warrior123", level: 7},
   {nickname: "ArcherQueen", level: 5,},
   {nickname: "DarkWizard", level: 6},
   {nickname: "HealerGirl", level: 3},
-  {nickname: "TankMaster", level: 7}
+  {nickname: "TankMaster", level: 7},
+  {nickname: "Warrior123", level: 7}
 ];
 
 export const PlayersInZone = ({useTestData = false}) => {
@@ -73,7 +73,7 @@ export const PlayersInZone = ({useTestData = false}) => {
         {players.length > 0 ? (
           players.map((player) => (
             <div
-              className="zone-player-box online"
+              className="zone-player-box"
               key={player.id || player.nickname}
             >
               <div className="player-avatar">

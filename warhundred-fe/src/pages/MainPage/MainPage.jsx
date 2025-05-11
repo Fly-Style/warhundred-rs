@@ -26,7 +26,7 @@ export const MainPage = () => {
                 </Button>
             </div>
             <div className="locations-list-wrap">LOCATIONS</div>
-            <Chat className="cnt chat-parent">CHAT</Chat>
+            <Chat useTestData={true} />
             <PlayersInZone useTestData={true} />
         </div>
     )

@@ -20,18 +20,18 @@ describe('PlayersInZone', () => {
     expect(screen.getByText('5 online')).toBeInTheDocument();
 
     // Check if all test players are rendered with the correct format
-    expect(screen.getByText('Warrior123[7]')).toBeInTheDocument();
     expect(screen.getByText('ArcherQueen[5]')).toBeInTheDocument();
     expect(screen.getByText('DarkWizard[6]')).toBeInTheDocument();
     expect(screen.getByText('HealerGirl[3]')).toBeInTheDocument();
     expect(screen.getByText('TankMaster[7]')).toBeInTheDocument();
+    expect(screen.getByText('Warrior123[7]')).toBeInTheDocument();
 
     // Check for avatars
     const avatars = screen.getAllByRole('generic', { name: '' }).filter(
       element => element.className.includes('player-avatar')
     );
     expect(avatars.length).toBe(5);
-    expect(avatars[0]).toHaveTextContent('W'); // First letter of Warrior123
+    expect(avatars[0]).toHaveTextContent('A'); // First letter of Warrior123
 
     // Check for action buttons
     const messageButtons = screen.getAllByTitle('Send message');
