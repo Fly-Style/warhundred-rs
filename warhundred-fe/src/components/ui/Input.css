@@ -24,8 +24,8 @@
 .ui-input {
   appearance: none;
   background-color: #fff;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
+  border: 0.0625rem solid #cbd5e0;
+  border-radius: 0.25rem;
   color: #2d3748;
   display: block;
   font-size: 1rem;
@@ -38,7 +38,7 @@
 
 .ui-input:focus {
   border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+  box-shadow: 0 0 0 0.1875rem rgba(66, 153, 225, 0.5);
   outline: none;
 }
 
@@ -61,7 +61,7 @@
 
 .ui-input--error:focus {
   border-color: #e53e3e;
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.5);
+  box-shadow: 0 0 0 0.1875rem rgba(229, 62, 62, 0.5);
 }
 
 /* Error message */

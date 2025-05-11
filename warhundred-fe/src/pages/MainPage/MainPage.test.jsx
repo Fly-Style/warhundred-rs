@@ -1,42 +1,34 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MainPage } from './MainPage';
-import { useAuth } from '../../context/AuthProvider';
-import PropTypes from 'prop-types';
 
-// Mock the child components
-vi.mock('./components/Chat.jsx', () => {
-  const Chat = ({ children }) => <div data-testid="chat">{children}</div>;
-  Chat.propTypes = {
-    children: PropTypes.node
-  };
-  return { Chat };
-});
-
-vi.mock('./components/PlayersInZone.jsx', () => {
-  const PlayersInZone = ({ children }) => <div data-testid="players-in-zone">{children}</div>;
-  PlayersInZone.propTypes = {
-    children: PropTypes.node
-  };
-  return { PlayersInZone };
-});
-
-vi.mock('../GameWindow/GameWindow.jsx', () => {
-  const GameWindow = ({ className }) => <div data-testid="game-window" className={className}>Game Window</div>;
-  GameWindow.propTypes = {
-    className: PropTypes.string
-  };
-  return { default: GameWindow };
-});
-
-// Mock the useAuth hook
+// Mock the useAuth hook before importing it
 vi.mock('../../context/AuthProvider.jsx', () => ({
   useAuth: vi.fn()
 }));
 
+// Import after mocking
+import { useAuth } from '../../context/AuthProvider';
+
+// Disable prop-types validation for mock components
+/* eslint-disable react/prop-types */
+
+// Mock all components and hooks
+vi.mock('./components/Chat.jsx', () => ({
+  Chat: ({ children }) => <div data-testid="chat">{children}</div>
+}));
+
+vi.mock('./components/PlayersInZone.jsx', () => ({
+  PlayersInZone: ({ children, useTestData }) => <div data-testid="players-in-zone" data-use-test-data={useTestData}>{children}</div>
+}));
+
+vi.mock('../GameWindow/GameWindow.jsx', () => ({
+  default: ({ className }) => <div data-testid="game-window" className={className}>Game Window</div>
+}));
+
 // Mock the Button component
-vi.mock('../../components/ui', () => {
-  const Button = ({ children, buttonProps, variant, className }) => (
+vi.mock('../../components/ui', () => ({
+  Button: ({ children, buttonProps, variant, className }) => (
     <button 
       data-testid="button" 
       onClick={buttonProps?.onClick}
@@ -45,17 +37,10 @@ vi.mock('../../components/ui', () => {
     >
       {children}
     </button>
-  );
-  Button.propTypes = {
-    children: PropTypes.node,
-    buttonProps: PropTypes.shape({
-      onClick: PropTypes.func
-    }),
-    variant: PropTypes.string,
-    className: PropTypes.string
-  };
-  return { Button };
-});
+  )
+}));
+
+/* eslint-enable react/prop-types */
 
 describe('MainPage', () => {
   it('renders correctly with all child components', () => {
