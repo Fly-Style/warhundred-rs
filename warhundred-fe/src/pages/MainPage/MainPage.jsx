@@ -3,6 +3,7 @@ import {Chat} from './components/Chat.jsx'
 import {PlayersInZone} from "./components/PlayersInZone.jsx";
 import GameWindow from "../GameWindow/GameWindow.jsx";
 import {useAuth} from "../../context/AuthProvider.jsx";
+import { Button } from "../../components/ui";
 
 export const MainPage = () => {
     const auth = useAuth();
@@ -16,9 +17,13 @@ export const MainPage = () => {
             <div className="header">Header</div>
             <GameWindow className="cnt game-window-wrap"/>
             <div className="cnt hidden-area-wrap">
-                <button className="logout-btn" onClick={logoutHandler}>
+                <Button 
+                    variant="danger" 
+                    buttonProps={{ onClick: logoutHandler }}
+                    className="logout-btn"
+                >
                     Logout
-                </button>
+                </Button>
             </div>
             <div className="locations-list-wrap">LOCATIONS</div>
             <Chat className="cnt chat-parent">CHAT</Chat>

@@ -1,0 +1,98 @@
+/* Base button styles */
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ui-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+.ui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Button variants */
+.ui-button--primary {
+  background-color: #4299e1;
+  color: white;
+}
+
+.ui-button--primary:hover:not(:disabled) {
+  background-color: #3182ce;
+}
+
+.ui-button--primary:active:not(:disabled) {
+  background-color: #2b6cb0;
+}
+
+.ui-button--secondary {
+  background-color: #e2e8f0;
+  color: #2d3748;
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+  background-color: #cbd5e0;
+}
+
+.ui-button--secondary:active:not(:disabled) {
+  background-color: #a0aec0;
+}
+
+.ui-button--danger {
+  background-color: #e05252;
+  color: white;
+  font-size: 0.875rem;
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0 0.75rem;
+}
+
+.ui-button--danger:hover:not(:disabled) {
+  background-color: #c74545;
+}
+
+.ui-button--danger:active:not(:disabled) {
+  background-color: #a83a3a;
+}
+
+/* Button sizes */
+.ui-button--small {
+  font-size: 0.875rem;
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0 0.75rem;
+}
+
+.ui-button--medium {
+  font-size: 1rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0 1rem;
+}
+
+.ui-button--large {
+  font-size: 1.125rem;
+  height: 3rem;
+  min-width: 3rem;
+  padding: 0 1.5rem;
+}
+
+/* Full width button */
+.ui-button--full-width {
+  width: 100%;
+}

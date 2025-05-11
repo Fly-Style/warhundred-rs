@@ -1,0 +1,72 @@
+/* Input container */
+.ui-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+/* Input label */
+.ui-input-label {
+  color: #4a5568;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Required indicator */
+.ui-input-required {
+  color: #e53e3e;
+  margin-left: 0.25rem;
+}
+
+/* Base input styles */
+.ui-input {
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  color: #2d3748;
+  display: block;
+  font-size: 1rem;
+  height: 2.5rem;
+  line-height: 1.5;
+  padding: 0 0.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.ui-input:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+  outline: none;
+}
+
+.ui-input::placeholder {
+  color: #a0aec0;
+}
+
+/* Disabled state */
+.ui-input:disabled {
+  background-color: #f7fafc;
+  border-color: #e2e8f0;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* Error state */
+.ui-input--error {
+  border-color: #e53e3e;
+}
+
+.ui-input--error:focus {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.5);
+}
+
+/* Error message */
+.ui-input-error {
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}

@@ -1,51 +1,26 @@
-import {useEffect, useRef, useState} from "react";
 import * as PIXI from "pixi.js";
 import '../GameWindow.css'
-import {updateDimensions} from "../../../util/utils.js";
+import BaseCanvas from "./BaseCanvas.jsx";
 
+/**
+ * BattleCanvas component for rendering the battle view
+ * @returns {JSX.Element} - Rendered component
+ */
 const BattleCanvas = () => {
-  const pixiContainer = useRef(null);
-  const [dimensions, setDimensions] = useState({width: 0, height: 0});
-
-  useEffect(() => {
-    updateDimensions(pixiContainer, dimensions, setDimensions);
-
-    const app = new PIXI.Application({
-      height: dimensions.height,
-      width: dimensions.width,
-      autoResize: true,
-      backgroundColor: 0x000000
-    });
-    pixiContainer.current.appendChild(app.view);
-
-    const canvasResizeObserver = () => {
-      if (pixiContainer.current &&
-          (dimensions.width !== pixiContainer.current.offsetWidth
-              || dimensions.height !== pixiContainer.current.offsetHeight)) {
-        setDimensions({
-          width: pixiContainer.current.offsetWidth,
-          height: pixiContainer.current.offsetHeight
-        })
-      }
-      app.renderer.resize(dimensions.width, dimensions.height);
-    }
-
-    // Add static town graphics (like buildings or trees)
+  /**
+   * Render battle-specific content on the canvas
+   * @param {PIXI.Application} app - The PIXI Application instance
+   */
+  const renderBattleContent = (app) => {
+    // Add battle-specific graphics
     const building = new PIXI.Graphics();
     building.beginFill(0xffff00);
-    building.drawRect(50, 150, 200, 300); // A green "building"
+    building.drawRect(50, 150, 200, 300);
     building.endFill();
     app.stage.addChild(building);
+  };
 
-    window.addEventListener("resize", canvasResizeObserver);
-
-    return () => {
-      window.removeEventListener("resize", canvasResizeObserver);
-      app.destroy(true, true);
-    } // Cleanup
-  }, [pixiContainer, dimensions]);
-
-  return <div ref={pixiContainer} className="game-window-canvas"/>;
+  return <BaseCanvas backgroundColor={0x000000} renderContent={renderBattleContent} />;
 };
 
 export default BattleCanvas;

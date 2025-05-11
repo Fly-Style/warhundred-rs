@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useNavigate} from "react-router-dom";
+// import {useNavigate} from "react-router-dom"; // Uncomment when navigation is needed
 import {useAuth} from "../../../context/AuthProvider.jsx";
 import "../EntryPage.css"
 
@@ -8,7 +8,7 @@ export const LoginForm = () => {
   const [pwd, setPwd] = useState(null);
 
   const auth = useAuth();
-  const nav = useNavigate();
+  // const nav = useNavigate(); // Uncomment when navigation is needed
 
   const submitHandler = (e) => {
     e.preventDefault();
