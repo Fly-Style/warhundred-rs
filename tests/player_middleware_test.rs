@@ -7,14 +7,18 @@ use dotenvy::dotenv;
 use http::header::CONTENT_TYPE;
 use rstest::{fixture, rstest};
 use std::sync::Arc;
+use testcontainers::ContainerAsync;
+use testcontainers_modules::redis::Redis;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use warhundred_rs::app_state::AppState;
 use warhundred_rs::routes::root_routes::root_router;
 
 mod common;
 
-struct App {
-    pool_ref: Arc<Pool>,
+pub struct App {
+    _redis: ContainerAsync<Redis>,
     server: TestServer,
+    state: AppState,
 }
 
 #[fixture]
@@ -26,19 +30,17 @@ pub async fn app() -> eyre::Result<App> {
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    #[cfg(not(feature = "local"))]
     let redis = start_containers().await?;
 
     let sqlite_url =
         std::env::var("DATABASE_URL").unwrap_or_else(|_| STD_SQLITE_TEST_URL.to_string());
 
     #[cfg(feature = "local")]
-    let redis_url: String = std::env::var("REDIS_URL")?;
-    #[cfg(not(feature = "local"))]
+    let _redis_url: String = std::env::var("REDIS_URL")?;
+
     let redis_url: String = redis_conn_uri(&redis).await?;
 
     let state = ctx(sqlite_url.as_ref(), redis_url.as_str()).await?;
-    let pool_ref = Arc::clone(&state.db_pool);
     let conn = state.db_pool.get().await?;
 
     conn.interact(|conn| {
@@ -58,9 +60,15 @@ pub async fn app() -> eyre::Result<App> {
     .await
     .map_err(|e| eyre::eyre!("{:?}", e))??;
 
-    let mut server = TestServer::new(root_router().with_state(state)).unwrap();
+    let mut server = TestServer::new(root_router().with_state(state.clone())).unwrap();
     server.save_cookies();
-    Ok(App { pool_ref, server })
+
+    #[cfg(not(feature = "local"))]
+    Ok(App {
+        _redis: redis,
+        server,
+        state,
+    })
 }
 
 pub async fn after_test(pool: Arc<Pool>) -> eyre::Result<()> {
@@ -76,7 +84,11 @@ pub async fn after_test(pool: Arc<Pool>) -> eyre::Result<()> {
 #[rstest]
 #[tokio::test]
 async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
-    let App { pool_ref, server } = app.await?;
+    let App {
+        _redis,
+        server,
+        state,
+    } = app.await?;
 
     let res = server
         .post("/register")
@@ -90,7 +102,62 @@ async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> 
 
     res.assert_status_ok();
 
-    after_test(pool_ref.clone()).await?;
+    after_test(state.db_pool.clone()).await?;
+
+    Ok(())
+}
+
+#[cfg(all(test, feature = "it_test"))]
+#[rstest]
+#[tokio::test]
+async fn test_login_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
+    let App {
+        _redis,
+        server,
+        state,
+    } = app.await?;
+
+    // First register a user
+    let username = "testuser";
+    let password = "testpassword";
+
+    let register_res = server
+        .post("/register")
+        .add_header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+        .json(&serde_json::json!({
+            "username": username,
+            "email": "test@example.com",
+            "password": password
+        }))
+        .await;
+
+    register_res.assert_status_ok();
+
+    // Then login with the registered user
+    let login_res = server
+        .post("/login")
+        .add_header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+        .json(&serde_json::json!({
+            "username": username,
+            "password": password
+        }))
+        .await;
+
+    login_res.assert_status_ok();
+
+    // Parse the response to get the access token
+    let login_response = login_res.json::<serde_json::Value>();
+    let access_token = login_response["access_token"].as_str().unwrap().to_string();
+
+    // Verify the session exists in Redis
+    let session_exists = state
+        .player_middleware
+        .check_player_session_token(username, access_token)
+        .await?;
+
+    assert!(session_exists, "Session should exist in Redis");
+
+    after_test(state.db_pool.clone()).await?;
 
     Ok(())
 }

@@ -15,25 +15,25 @@ pub async fn ctx(sqlite_url: &str, redis_url: &str) -> eyre::Result<AppState> {
     let manager = Manager::new(sqlite_url, deadpool_diesel::Runtime::Tokio1);
 
     let db_pool = Arc::new(Pool::builder(manager).build()?);
-    let redis_pool = {
+    let cache_pool = Arc::new({
         let manager = RedisConnectionManager::new(redis_url).expect("Unable connect to cache");
-        bb8::Pool::builder().max_size(25).build(manager).await?
-    };
+        bb8::Pool::builder().max_size(4).build(manager).await?
+    });
 
     Ok(AppState {
         player_middleware: Arc::new(
             PlayerMiddleware::builder()
                 .db_pool(db_pool.clone())
-                .cache_pool(Arc::new(redis_pool.clone()))
+                .cache_pool(cache_pool.clone())
                 .build(),
         ),
         cache_middleware: Arc::new(
             CacheMiddleware::builder()
-                .cache_pool(Arc::new(redis_pool.clone()))
+                .cache_pool(cache_pool.clone())
                 .build(),
         ),
         db_pool,
-        cache_pool: Arc::new(redis_pool),
+        cache_pool,
     })
 }
 
