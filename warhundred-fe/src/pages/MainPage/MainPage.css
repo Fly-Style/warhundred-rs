@@ -42,6 +42,30 @@
 
 .locations-list-wrap {
   grid-area: 2 / 2 / 3 / 3;
+  display: flex;
+  flex-direction: column;
+  background-color: #fffff0;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-height: 100%;
+  transition: all 0.3s ease;
+}
+
+.locations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: #e9ecef;
+  border-bottom: 0.0625rem solid #dee2e6;
+}
+
+.locations-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #343a40;
+  font-weight: 600;
 }
 
 /* Players in Zone Component */
@@ -131,6 +155,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.player-rank-icon {
+  flex-shrink: 0;
+  margin-right: 0.125rem;
+  vertical-align: middle;
+}
+
+.rank-icon-wrapper {
+  display: inline-flex;
+  cursor: help;
+  position: relative;
 }
 
 .player-level {
@@ -350,4 +389,134 @@
 .chat-submit:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
+}
+
+/* Player Mini Profile Component */
+.player-mini-profile {
+  display: flex;
+  flex-direction: column;
+  background-color: #fffff0;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-top: auto;
+  margin-bottom: 0.5rem;
+}
+
+.player-mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: #e9ecef;
+  border-bottom: 0.0625rem solid #dee2e6;
+}
+
+.player-mini-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #343a40;
+  font-weight: 600;
+}
+
+.player-mini-content {
+  display: flex;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Avatar removed as per requirements */
+
+.player-mini-info {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.player-mini-name {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #343a40;
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.player-mini-level {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.player-level, .player-rank {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: #e9ecef;
+  font-weight: 500;
+}
+
+.player-mini-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.player-mini-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-bar-container {
+  height: 0.6rem;
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin: 0.25rem 0;
+}
+
+.stat-bar {
+  height: 100%;
+  border-radius: 0.25rem;
+  transition: width 0.3s ease-in-out;
+}
+
+.health-bar {
+  background-color: #dc3545; /* Red for health */
+}
+
+.stamina-bar {
+  background-color: #28a745; /* Green for stamina */
+}
+
+.experience-bar {
+  background-color: #17a2b8; /* Blue for experience */
+}
+
+.stat-value {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-align: right;
+}
+
+.player-profile-loading {
+  padding: 1rem;
+  text-align: center;
+  color: #6c757d;
 }

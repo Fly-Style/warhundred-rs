@@ -1,6 +1,7 @@
 import "./MainPage.css"
 import {Chat} from './components/Chat.jsx'
 import {PlayersInZone} from "./components/PlayersInZone.jsx";
+import {PlayerMiniProfile} from "./components/PlayerMiniProfile.jsx";
 import GameWindow from "../GameWindow/GameWindow.jsx";
 import {useAuth} from "../../context/AuthProvider.jsx";
 import { Button } from "../../components/ui";
@@ -25,7 +26,12 @@ export const MainPage = () => {
                     Logout
                 </Button>
             </div>
-            <div className="locations-list-wrap">LOCATIONS</div>
+            <div className="locations-list-wrap">
+                <div className="locations-header">
+                    <h3>LOCATIONS</h3>
+                </div>
+                <PlayerMiniProfile useTestData={true} />
+            </div>
             <Chat useTestData={true} />
             <PlayersInZone useTestData={true} />
         </div>

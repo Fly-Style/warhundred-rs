@@ -2,13 +2,203 @@ import {useState, useEffect} from "react";
 import axios from "axios";
 import PropTypes from 'prop-types';
 
+// RankIcon component - SVG placeholder for rank
+const RankIcon = ({rank}) => {
+  // Define colors based on rank
+
+  // Create a wrapper with tooltip
+  const renderIcon = (svgContent) => (
+    <div className="rank-icon-wrapper" title={rank}>
+      {svgContent}
+    </div>
+  );
+
+  switch (rank) {
+    case "Senior Soldier":
+      return renderIcon(
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Rectangle */}
+          <rect
+            x="2"
+            y="2"
+            width="14"
+            height="20"
+            rx="2"
+            fill="white"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          <rect
+            x="7.5"
+            y="5"
+            width="3"
+            height="3"
+            rx="2"
+            fill="black"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect
+            x="7.5"
+            y="10.5"
+            width="3"
+            height="3"
+            rx="2"
+            fill="black"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect
+            x="7.5"
+            y="16"
+            width="3"
+            height="3"
+            rx="2"
+            fill="black"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+      case "Soldier":
+      return renderIcon(
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Rectangle */}
+          <rect
+            x="2"
+            y="2"
+            width="14"
+            height="20"
+            rx="2"
+            fill="white"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          <rect
+            x="7.5"
+            y="6"
+            width="3"
+            height="3"
+            rx="2"
+            fill="black"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect
+            x="7.5"
+            y="15"
+            width="3"
+            height="3"
+            rx="2"
+            fill="black"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "Recruit":
+      return renderIcon(
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Rectangle */}
+          <rect
+            x="2"
+            y="2"
+            width="14"
+            height="20"
+            rx="2"
+            fill="white"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          <rect
+            x="7.5"
+            y="11"
+            width="3"
+            height="3"
+            rx="2"
+            fill="black"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "Novice":
+    default:
+      return (
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Rectangle */}
+          <rect
+            x="2"
+            y="2"
+            width="14"
+            height="20"
+            rx="2"
+            fill="white"
+            stroke="#343a40"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>)
+  }
+};
+
+RankIcon.propTypes = {
+  rank: PropTypes.string.isRequired
+};
+
 // Test data for development and testing
 const testPlayers = [
-  {nickname: "ArcherQueen", level: 5,},
-  {nickname: "DarkWizard", level: 6},
-  {nickname: "HealerGirl", level: 3},
-  {nickname: "TankMaster", level: 7},
-  {nickname: "Warrior123", level: 7}
+  {nickname: "ArcherQueen", level: 5, rank: "Novice"},
+  {nickname: "DarkWizard", level: 6, rank: "Recruit"},
+  {nickname: "HealerGirl", level: 3, rank: "Novice"},
+  {nickname: "TankMaster", level: 7, rank: "Senior Soldier"},
+  {nickname: "Warrior123", level: 7, rank: "Soldier"}
 ];
 
 export const PlayersInZone = ({useTestData = false}) => {
@@ -80,7 +270,10 @@ export const PlayersInZone = ({useTestData = false}) => {
                 {player.nickname ? player.nickname.charAt(0).toUpperCase() : '?'}
               </div>
               <div className="player-info">
-                <div className="player-name">{player.nickname}[{player.level}]</div>
+                <div className="player-name">
+                  {player.rank && <RankIcon rank={player.rank}/>}
+                  {player.nickname}[{player.level}]
+                </div>
               </div>
               <div className="player-actions">
                 <button className="action-button message-btn" title="Send message">
