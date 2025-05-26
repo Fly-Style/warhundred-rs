@@ -41,7 +41,7 @@ const TownCanvas = () => {
     frontFace.drawRect(0, 0, width, height);
     frontFace.endFill();
 
-    // Add pixel-art style details to front face
+    // Add pixel-art style details to the front face
     const details = new PIXI.Graphics();
     details.lineStyle(2, 0x000000, 0.5);
 
@@ -437,24 +437,118 @@ const TownCanvas = () => {
   };
 
   /**
+   * Check if a villager intersects with a building
+   * @param {Object} villager - The villager object
+   * @param {Object} building - The building object
+   * @param {number} nextX - The next X position of the villager
+   * @param {number} nextY - The next Y position of the villager
+   * @returns {boolean} - Whether there is an intersection
+   */
+  const checkBuildingCollision = (villager, building, nextX, nextY) => {
+    // Approximate the villager as a rectangle for collision detection
+    const villagerSize = 30; // Approximate size of villager
+
+    // Reduce the collision vector size by applying a reduction factor
+    const reductionFactor = 0.8; // 20% reduction in collision size
+    const widthReduction = building.width * (1 - reductionFactor) / 2;
+    const heightReduction = building.height * (1 - reductionFactor) / 2;
+    const depthReduction = building.depth * (1 - reductionFactor) / 2;
+
+    // Check collision with the reduced boundary of the building
+    return (
+      nextX < building.x + building.width * reductionFactor + building.depth * reductionFactor + widthReduction + depthReduction && 
+      nextX + villagerSize > building.x + widthReduction && 
+      nextY < building.y + building.height * reductionFactor + heightReduction && 
+      nextY + villagerSize > building.y + heightReduction
+    );
+  };
+
+  /**
    * Animate villagers
    * @param {PIXI.Application} app - The PIXI Application instance
    */
   const animateVillagers = (app) => {
     const animate = () => {
       villagersRef.current.forEach(villager => {
-        // Move villager
-        villager.x += villager.vx;
-        villager.y += villager.vy;
+        // Calculate next position
+        const nextX = villager.x + villager.vx;
+        const nextY = villager.y + villager.vy;
 
-        // Bounce off edges
-        if (villager.x < 0 || villager.x > app.renderer.width - 50) {
-          villager.vx *= -1;
-          villager.scale.x *= -1; // Flip the villager
+        // Check for building collisions
+        let buildingCollision = false;
+
+        for (const building of buildingsRef.current) {
+          if (checkBuildingCollision(villager, building, nextX, nextY)) {
+            buildingCollision = true;
+
+            // Determine which side of the building was hit
+            const centerX = building.x + building.width / 2;
+            const centerY = building.y + building.height / 2;
+
+            // Calculate vector from building center to villager
+            const dx = villager.x - centerX;
+            const dy = villager.y - centerY;
+
+            // Determine if horizontal or vertical collision is more significant
+            if (Math.abs(dx) > Math.abs(dy)) {
+              // Horizontal collision
+              villager.vx *= -1;
+              // Apply the same reduction factor as in checkBuildingCollision
+              const reductionFactor = 0.8;
+              const villagerSize = 30; // Same as in checkBuildingCollision
+              const widthReduction = building.width * (1 - reductionFactor) / 2;
+              const depthReduction = building.depth * (1 - reductionFactor) / 2;
+
+              if (dx > 0) {
+                // Collision from right, push villager right
+                villager.x = building.x + building.width * reductionFactor + building.depth * reductionFactor + widthReduction + depthReduction + 1;
+              } else {
+                // Collision from left, push villager left
+                villager.x = building.x + widthReduction - villagerSize - 1;
+              }
+            } else {
+              // Vertical collision
+              villager.vy *= -1;
+              // Apply the same reduction factor as in checkBuildingCollision
+              const reductionFactor = 0.8;
+              const villagerSize = 30; // Same as in checkBuildingCollision
+              const heightReduction = building.height * (1 - reductionFactor) / 2;
+
+              if (dy > 0) {
+                // Collision from bottom, push villager down
+                villager.y = building.y + building.height * reductionFactor + heightReduction + 1;
+              } else {
+                // Collision from top, push villager up
+                villager.y = building.y + heightReduction - villagerSize - 1;
+              }
+            }
+
+            // Flip the villager if horizontal direction changed
+            if (villager.vx < 0) {
+              villager.scale.x = -Math.abs(villager.scale.x);
+            } else {
+              villager.scale.x = Math.abs(villager.scale.x);
+            }
+
+            break; // Exit the loop once a collision is found
+          }
         }
 
-        if (villager.y < app.renderer.height / 2 || villager.y > app.renderer.height - 50) {
-          villager.vy *= -1;
+        // If no building collision, proceed with normal movement
+        if (!buildingCollision) {
+          // Move villager
+          villager.x = nextX;
+          villager.y = nextY;
+
+          // Bounce off edges
+          if (villager.x < 0 || villager.x > app.renderer.width - 50) {
+            villager.vx *= -1;
+            villager.scale.x *= -1; // Flip the villager
+          }
+
+          if (villager.y < app.renderer.height / 2 || villager.y > app.renderer.height - 50) {
+            villager.vy *= -1;
+          }
         }
       });
 
@@ -463,6 +557,9 @@ const TownCanvas = () => {
 
     animate();
   };
+
+  // Store building boundaries for collision detection
+  const buildingsRef = useRef([]);
 
   /**
    * Render town-specific content on the canvas
@@ -486,7 +583,10 @@ const TownCanvas = () => {
     // Create a container for all village elements
     const villageContainer = new PIXI.Container();
 
-    // Add ground with perspective grid
+    // Reset buildings array
+    buildingsRef.current = [];
+
+    // Add ground with a perspective grid
     const ground = createGround(width, height);
     villageContainer.addChild(ground);
 
@@ -497,9 +597,38 @@ const TownCanvas = () => {
 
     // Main buildings - Position them on the ground
     // Place buildings at height/2 (ground level) so they sit directly on the ground
-    villageContainer.addChild(createBuilding(100, height / 2, 150, 150, 50, buildingColors[0], roofColors[0]));
-    villageContainer.addChild(createBuilding(400, height / 2, 200, 180, 70, buildingColors[1], roofColors[1]));
-    villageContainer.addChild(createBuilding(700, height / 2, 170, 160, 60, buildingColors[2], roofColors[2]));
+    const building1 = createBuilding(100, height / 2, 150, 150, 50, buildingColors[0], roofColors[0]);
+    const building2 = createBuilding(400, height / 2, 200, 180, 70, buildingColors[1], roofColors[1]);
+    const building3 = createBuilding(700, height / 2, 170, 160, 60, buildingColors[2], roofColors[2]);
+
+    villageContainer.addChild(building1);
+    villageContainer.addChild(building2);
+    villageContainer.addChild(building3);
+
+    // Store building boundaries for collision detection
+    buildingsRef.current.push({
+      x: 100,
+      y: height / 2,
+      width: 150,
+      height: 150,
+      depth: 50
+    });
+
+    buildingsRef.current.push({
+      x: 400,
+      y: height / 2,
+      width: 200,
+      height: 180,
+      depth: 70
+    });
+
+    buildingsRef.current.push({
+      x: 700,
+      y: height / 2,
+      width: 170,
+      height: 160,
+      depth: 60
+    });
 
     // Add trees with better distribution
     // Place some trees between buildings
@@ -536,9 +665,9 @@ const TownCanvas = () => {
     const villagerPositions = [
       { x: width / 2 - 20, y: height / 2 + 50 }, // On the path
       { x: width / 2 + 20, y: height / 2 + 100 }, // On the path
-      { x: 150, y: height / 2 + 40 }, // Near a building
-      { x: 450, y: height / 2 + 60 }, // Near a building
-      { x: 700, y: height / 2 + 30 }  // Near a building
+      { x: 150, y: height / 2 + 140 }, // Near a building
+      { x: 450, y: height / 2 + 260 }, // Near a building
+      { x: 700, y: height / 2 + 330 }  // Near a building
     ];
 
     // Add positioned villagers
