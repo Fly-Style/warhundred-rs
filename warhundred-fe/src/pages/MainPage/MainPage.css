@@ -56,14 +56,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   background-color: #e9ecef;
   border-bottom: 0.0625rem solid #dee2e6;
 }
 
 .locations-header h3 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #343a40;
   font-weight: 600;
 }
@@ -85,24 +85,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   background-color: #e9ecef;
   border-bottom: 0.0625rem solid #dee2e6;
 }
 
 .zone-players-header h3 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #343a40;
   font-weight: 600;
 }
 
 .player-count {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #6c757d;
   background-color: #dee2e6;
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.6rem;
 }
 
 .zone-players-list {
@@ -419,6 +419,22 @@
   font-weight: 600;
 }
 
+.view-profile-link {
+  font-size: 0.8rem;
+  color: #007bff;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(0, 123, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.view-profile-link:hover {
+  background-color: rgba(0, 123, 255, 0.2);
+  color: #0056b3;
+  text-decoration: underline;
+}
+
 .player-mini-content {
   display: flex;
   padding: 1rem;
@@ -436,25 +452,25 @@
 
 .player-mini-name {
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #343a40;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
   text-align: center;
 }
 
 .player-mini-level {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  font-size: 0.9rem;
+  gap: 0.6rem;
+  font-size: 0.8rem;
   color: #6c757d;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .player-level, .player-rank {
   display: inline-block;
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 0.25rem;
   background-color: #e9ecef;
   font-weight: 500;
@@ -463,7 +479,7 @@
 .player-mini-stats {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
   width: 90%;
   margin: 0 auto;
 }
@@ -471,11 +487,11 @@
 .player-mini-stat {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #6c757d;
   font-weight: 600;
   display: flex;
@@ -484,11 +500,11 @@
 }
 
 .stat-bar-container {
-  height: 0.6rem;
+  height: 0.5rem;
   background-color: #e9ecef;
   border-radius: 0.25rem;
   overflow: hidden;
-  margin: 0.25rem 0;
+  margin: 0.2rem 0;
 }
 
 .stat-bar {

@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import RequireAuth from './util/components/RequireAuth.jsx';
 import Missing from './util/components/Missing.jsx';
+import PlayerProfile from './pages/PlayerProfile/PlayerProfile.jsx';
 
 /**
  * Application routes configuration
@@ -10,6 +11,7 @@ export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<RequireAuth />} />
+      <Route path="/player/profile" element={<PlayerProfile />} />
       <Route path="*" element={<Missing />} />
     </Routes>
   );
@@ -24,6 +26,7 @@ export const AppRoutes = () => {
 /* eslint-disable react-refresh/only-export-components */
 export const ROUTES = {
   HOME: '/',
+  PLAYER_PROFILE: '/player/profile',
   // Add more routes as needed
 };
 /* eslint-enable react-refresh/only-export-components */

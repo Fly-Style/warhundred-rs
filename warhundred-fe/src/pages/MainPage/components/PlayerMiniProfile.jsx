@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { ROUTES } from '../../../routes';
 
 // Test data for development and testing
 const testPlayerData = {
@@ -13,7 +14,8 @@ const testPlayerData = {
 };
 
 export const PlayerMiniProfile = ({ useTestData = true }) => {
-  // noinspection JSUnusedLocalSymbols
+  // setPlayerData is not used now but will be used when implementing real API calls
+  // eslint-disable-next-line no-unused-vars
   const [playerData, setPlayerData] = useState(useTestData ? testPlayerData : null);
 
   // In a real application, you would fetch the player data from an API or context
@@ -29,6 +31,14 @@ export const PlayerMiniProfile = ({ useTestData = true }) => {
     <div className="player-mini-profile">
       <div className="player-mini-header">
         <h3>Your Character</h3>
+        <a 
+          href={ROUTES.PLAYER_PROFILE} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="view-profile-link"
+        >
+          View Full Profile
+        </a>
       </div>
 
       <div className="player-mini-content">
