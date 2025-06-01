@@ -20,77 +20,36 @@ export const PlayerProfile = () => {
         const fetchPlayerData = async () => {
             try {
                 setLoading(true);
-                setError(null); // Reset error state on new fetch attempt
+                setError(null); // Reset error state on a new fetch attempt
 
                 // If we have a real API endpoint, we would use it here
                 // const response = await playerService.getPlayerProfile(auth.user);
                 // setPlayerData(response.data);
 
-                // For now, using test data
-                timeoutId = setTimeout(() => {
-                    setPlayerData({
-                        nickname: auth.user || "YourCharacter",
-                        level: 5,
-                        rank: "Novice",
-                        spec: "Archer",
-                        health: 75,
-                        maxHealth: 100,
-                        stamina: 60,
-                        maxStamina: 100,
-                        experience: 65,
-                        nextLevelExperience: 100,
-                        strength: 8,
-                        dexterity: 12,
-                        intelligence: 7,
-                        wisdom: 6,
-                        constitution: 9,
-                        charisma: 5,
-                        inventory: [
-                            {id: 1, name: "Wooden Bow", type: "Weapon", quality: "Common"},
-                            {id: 2, name: "Leather Armor", type: "Armor", quality: "Common"},
-                            {id: 3, name: "Health Potion", type: "Consumable", quality: "Common", quantity: 3}
-                        ],
-                        skills: [
-                            {id: 1, name: "Archery", level: 3, progress: 65, maxProgress: 100},
-                            {id: 2, name: "Stealth", level: 2, progress: 40, maxProgress: 100},
-                            {id: 3, name: "Survival", level: 1, progress: 25, maxProgress: 100}
-                        ],
-                        achievements: [
-                            {
-                                id: 1,
-                                name: "First Blood",
-                                description: "Defeat your first enemy",
-                                completed: true,
-                                progress: 1,
-                                maxProgress: 1
-                            },
-                            {
-                                id: 2,
-                                name: "Collector",
-                                description: "Collect 50 items",
-                                completed: false,
-                                progress: 24,
-                                maxProgress: 50
-                            },
-                            {
-                                id: 3,
-                                name: "Explorer",
-                                description: "Travel 5000 meters",
-                                completed: false,
-                                progress: 1500,
-                                maxProgress: 5000
-                            }
-                        ],
-                        statistics: {
-                            enemiesDefeated: 12,
-                            questsCompleted: 3,
-                            itemsCollected: 24,
-                            distanceTraveled: 1500,
-                            timePlayedMinutes: 120
-                        }
-                    });
-                    setLoading(false);
-                }, 1000);
+                setPlayerData({
+                    nickname: auth.user || "YourCharacter",
+                    level: 5,
+                    rank: "Novice",
+                    spec: "Archer",
+                    health: 75,
+                    maxHealth: 100,
+                    stamina: 60,
+                    maxStamina: 100,
+                    experience: 65,
+                    nextLevelExperience: 100,
+                    strength: 8,
+                    dexterity: 12,
+                    physique: 7,
+                    luck: 7,
+                    intellect: 7,
+                    inventory: [],
+                    statistics: {
+                        battlesWon: 12,
+                        battlesLost: 3,
+                        timePlayedMinutes: 120
+                    }
+                });
+                setLoading(false);
             } catch (err) {
                 setError("Failed to load player data. Please try again later.");
                 setLoading(false);
@@ -133,8 +92,8 @@ export const PlayerProfile = () => {
     }
 
     const {
-        nickname, level, rank, spec, health, maxHealth, stamina, maxStamina, experience,
-        nextLevelExperience, strength, dexterity, intelligence, inventory, statistics
+        nickname, level, rank, spec, health, maxHealth, stamina, maxStamina,
+        strength, dexterity, physique, luck, intellect, inventory, statistics
     } = playerData;
 
     return (
@@ -142,9 +101,15 @@ export const PlayerProfile = () => {
             <div className="player-profile-header">
                 <h1>{nickname}</h1>
                 <div className="player-profile-basic-info">
+                    <span className="player-rank">
+                        <div className="rank-image-placeholder"></div>
+                        Rank: {rank}
+                    </span>
                     <span className="player-level">Level: {level}</span>
-                    <span className="player-rank">Rank: {rank}</span>
-                    <span className="player-class">Class: {spec}</span>
+                    <span className="player-class">
+                        <div className="class-image-placeholder"></div>
+                        Class: {spec}
+                    </span>
                 </div>
             </div>
 
@@ -183,16 +148,6 @@ export const PlayerProfile = () => {
                                 <div className="stat-value">{stamina}/{maxStamina}</div>
                             </div>
                         </div>
-                        <div className="player-stat">
-                            <div className="stat-label">Experience</div>
-                            <div className="stat-bar-container">
-                                <div
-                                    className="stat-bar experience-bar"
-                                    style={{width: `${(experience / nextLevelExperience) * 100}%`}}
-                                ></div>
-                                <div className="stat-value">{experience}/{nextLevelExperience}</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -209,8 +164,16 @@ export const PlayerProfile = () => {
                             <span className="attribute-value">{dexterity}</span>
                         </div>
                         <div className="player-attribute">
+                            <span className="attribute-label">PHYS</span>
+                            <span className="attribute-value">{physique}</span>
+                        </div>
+                        <div className="player-attribute">
+                            <span className="attribute-label">LUCK</span>
+                            <span className="attribute-value">{luck}</span>
+                        </div>
+                        <div className="player-attribute">
                             <span className="attribute-label">INT</span>
-                            <span className="attribute-value">{intelligence}</span>
+                            <span className="attribute-value">{intellect}</span>
                         </div>
                     </div>
                 </div>
@@ -220,20 +183,12 @@ export const PlayerProfile = () => {
                     <h2>Statistics</h2>
                     <div className="player-statistics-grid">
                         <div className="player-statistic">
-                            <span className="statistic-label">Enemies Defeated</span>
-                            <span className="statistic-value">{statistics.enemiesDefeated}</span>
+                            <span className="statistic-label">Battles won</span>
+                            <span className="statistic-value">{statistics.battlesWon}</span>
                         </div>
                         <div className="player-statistic">
-                            <span className="statistic-label">Quests Completed</span>
-                            <span className="statistic-value">{statistics.questsCompleted}</span>
-                        </div>
-                        <div className="player-statistic">
-                            <span className="statistic-label">Items Collected</span>
-                            <span className="statistic-value">{statistics.itemsCollected}</span>
-                        </div>
-                        <div className="player-statistic">
-                            <span className="statistic-label">Distance</span>
-                            <span className="statistic-value">{statistics.distanceTraveled}m</span>
+                            <span className="statistic-label">Battles lost</span>
+                            <span className="statistic-value">{statistics.battlesLost}</span>
                         </div>
                         <div className="player-statistic">
                             <span className="statistic-label">Time Played</span>

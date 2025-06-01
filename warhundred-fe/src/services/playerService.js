@@ -8,7 +8,7 @@ import authService from './authService';
 export const getPlayerProfile = async (nickname) => {
   try {
     // Use the configured axios instance from authService to ensure auth headers are included
-    const response = await authService.api.get(`/player/profile/${nickname}`);
+    const response = await authService.api.get(`/profile/${nickname}`);
     return response;
   } catch (error) {
     console.error('Error fetching player profile:', error);
@@ -24,7 +24,7 @@ export const getPlayerProfile = async (nickname) => {
  */
 export const updatePlayerProfile = async (nickname, profileData) => {
   try {
-    const response = await authService.api.put(`/player/profile/${nickname}`, profileData);
+    const response = await authService.api.put(`/profile/${nickname}`, profileData);
     return response;
   } catch (error) {
     console.error('Error updating player profile:', error);

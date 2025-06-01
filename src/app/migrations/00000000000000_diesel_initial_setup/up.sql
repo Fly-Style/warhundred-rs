@@ -104,7 +104,7 @@ VALUES (0, 'no-class', NULL, NULL, NULL),
        (1, 'Warrior', 'One-handed weapons', 'Two-handed weapons', 'Shield'),
        (2, 'Archer', 'Bow', 'Crossbow', 'Dexterity'),
        (3, 'Healer', 'Therapy', 'Surgery', 'Buffing'),
-       (4, 'Rogue', 'Stealth', 'Traps', NULL),
+       (4, 'Rogue', 'Stealth', 'Traps', 'Throwing Weapons'),
        (5, 'Lancer', 'Horseriding', 'Crushing Weapons', 'Impaling Weapons');
 
 CREATE TABLE IF NOT EXISTS player_experience_table

@@ -9,14 +9,14 @@ mod tests {
         // Arrange
         let a = 2;
         let b = 3;
-        
+
         // Act
         let result = a + b;
-        
+
         // Assert
         assert_eq!(result, 5);
     }
-    
+
     #[rstest]
     #[case(1, 1, 2)]
     #[case(5, 7, 12)]
@@ -24,7 +24,7 @@ mod tests {
     fn test_parameterized_addition(#[case] a: i32, #[case] b: i32, #[case] expected: i32) {
         // Act
         let result = a + b;
-        
+
         // Assert
         assert_eq!(result, expected);
     }

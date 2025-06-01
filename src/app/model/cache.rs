@@ -7,5 +7,5 @@ pub struct PlayerInZone {
     pub id: i64,
     pub nickname: String,
     pub level: u32,
-    pub clan_link: Option<String>
+    pub clan_link: Option<String>,
 }

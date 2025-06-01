@@ -17,7 +17,7 @@ diesel = { version = "2.2", features = ["chrono", "sqlite", "returning_clauses_f
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 dotenvy = "0.15.7"
 eyre = "0.6.12"
-grid = "0.11.0" # Don't update the version, 0.12.0 has a breaking changes
+grid = "0.11.0" # Don't update the version, 0.12.0 has a breaking change
 jsonwebtoken = "9.3.1"
 lazy_static = "1.5.0"
 mime = "0.3.17"
@@ -39,8 +39,10 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 [dev-dependencies]
 axum-test = { version = "17.2.0" }
 rstest = "0.25.0"
+serial_test = "3.2.0"
 testcontainers = { version = "0.23.1", features = ["reqwest"] }
 testcontainers-modules = { version = "0.11.5", features = ["redis"] }
+
 
 [build-dependencies]
 prost-build = "0.13.3"

@@ -6,6 +6,7 @@ use testcontainers::ContainerAsync;
 use testcontainers_modules::redis::Redis;
 use warhundred_rs::app::middleware::cache_middleware::CacheMiddleware;
 use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
+use warhundred_rs::app::middleware::static_tables_cache_middleware::StaticTablesCacheMiddleware;
 use warhundred_rs::app::redis::RedisConnectionManager;
 use warhundred_rs::app_state::AppState;
 
@@ -29,6 +30,12 @@ pub async fn ctx(sqlite_url: &str, redis_url: &str) -> eyre::Result<AppState> {
         ),
         cache_middleware: Arc::new(
             CacheMiddleware::builder()
+                .cache_pool(cache_pool.clone())
+                .build(),
+        ),
+        static_table_middleware: Arc::new(
+            StaticTablesCacheMiddleware::builder()
+                .db_pool(db_pool.clone())
                 .cache_pool(cache_pool.clone())
                 .build(),
         ),

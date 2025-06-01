@@ -45,12 +45,16 @@ impl bb8::ManageConnection for RedisConnectionManager {
 #[serde(rename_all = "snake_case")]
 pub enum CacheKey {
     PlayerSession = 1,
+    RankTable = 3,
+    ClassTable = 4,
 }
 
 impl AsRef<str> for CacheKey {
     fn as_ref(&self) -> &str {
         match self {
             CacheKey::PlayerSession => "player_session",
+            CacheKey::RankTable => "rank_table",
+            CacheKey::ClassTable => "class_table",
         }
     }
 }

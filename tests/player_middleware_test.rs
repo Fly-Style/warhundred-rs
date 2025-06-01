@@ -1,17 +1,26 @@
 use crate::common::{ctx, redis_conn_uri, start_containers, STD_SQLITE_TEST_URL};
-use axum::http;
+use axum::{http, Router};
 use axum_test::TestServer;
 use deadpool_diesel::sqlite::Pool;
-use diesel::RunQueryDsl;
+use diesel::{sql_types::Integer, QueryableByName, RunQueryDsl};
 use dotenvy::dotenv;
 use http::header::CONTENT_TYPE;
+use redis::AsyncCommands;
 use rstest::{fixture, rstest};
+use serial_test::serial;
 use std::sync::Arc;
 use testcontainers::ContainerAsync;
 use testcontainers_modules::redis::Redis;
-use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use warhundred_rs::app::redis::CacheKey;
 use warhundred_rs::app_state::AppState;
+use warhundred_rs::routes::profile_routes::profile_router;
 use warhundred_rs::routes::root_routes::root_router;
+
+#[derive(QueryableByName, Debug)]
+struct PlayerId {
+    #[diesel(sql_type = Integer)]
+    id: i32,
+}
 
 mod common;
 
@@ -24,11 +33,6 @@ pub struct App {
 #[fixture]
 pub async fn app() -> eyre::Result<App> {
     dotenv().ok();
-
-    let subscriber = FmtSubscriber::builder()
-        .with_env_filter(EnvFilter::from_default_env())
-        .finish();
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
     let redis = start_containers().await?;
 
@@ -60,7 +64,13 @@ pub async fn app() -> eyre::Result<App> {
     .await
     .map_err(|e| eyre::eyre!("{:?}", e))??;
 
-    let mut server = TestServer::new(root_router().with_state(state.clone())).unwrap();
+    let mut server = TestServer::new(
+        Router::new()
+            .merge(root_router())
+            .merge(profile_router())
+            .with_state(state.clone()),
+    )
+    .unwrap();
     server.save_cookies();
 
     #[cfg(not(feature = "local"))]
@@ -83,6 +93,7 @@ pub async fn after_test(pool: Arc<Pool>) -> eyre::Result<()> {
 #[cfg(test)]
 #[rstest]
 #[tokio::test]
+#[serial]
 async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
     let App {
         _redis,
@@ -110,6 +121,7 @@ async fn test_register_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> 
 #[cfg(all(test, feature = "it_test"))]
 #[rstest]
 #[tokio::test]
+#[serial]
 async fn test_login_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
     let App {
         _redis,
@@ -153,10 +165,122 @@ async fn test_login_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
     let session_exists = state
         .player_middleware
         .check_player_session_token(username, access_token)
-        .await?;
+        .await
+        .unwrap();
 
     assert!(session_exists, "Session should exist in Redis");
 
+    after_test(state.db_pool.clone()).await?;
+
+    Ok(())
+}
+
+#[cfg(all(test, feature = "it_test"))]
+#[rstest]
+#[tokio::test]
+#[serial]
+async fn test_player_profile(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
+    let App {
+        _redis,
+        server,
+        state,
+    } = app.await?;
+
+    // Create the necessary tables
+    let conn = state.db_pool.get().await?;
+
+    // Create a player_attributes table
+    conn.interact(|conn| {
+        diesel::sql_query(
+            "CREATE TABLE IF NOT EXISTS player_attributes (\
+                player_id INTEGER NOT NULL PRIMARY KEY,
+                class_id INTEGER NOT NULL DEFAULT 1,
+                rank_id INTEGER NOT NULL DEFAULT 1,
+                strength INTEGER NOT NULL DEFAULT 0,
+                dexterity INTEGER NOT NULL DEFAULT 0,
+                physique INTEGER NOT NULL DEFAULT 0,
+                luck INTEGER NOT NULL DEFAULT 0,
+                intellect INTEGER NOT NULL DEFAULT 0,
+                experience INTEGER NOT NULL DEFAULT 0,
+                level INTEGER NOT NULL DEFAULT 0,
+                valor INTEGER NOT NULL DEFAULT 0);",
+        )
+        .execute(conn)
+    })
+    .await
+    .map_err(|e| eyre::eyre!("{:?}", e))??;
+
+    // Register a test player
+    let username = "testprofile";
+    let email = "profile@test.com";
+    let password = "password";
+
+    let register_res = server
+        .post("/register")
+        .add_header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+        .json(&serde_json::json!({
+            "username": username,
+            "email": email,
+            "password": password
+        }))
+        .await;
+
+    register_res.assert_status_ok();
+
+    // Get the player ID
+    let player_id = conn
+        .interact(|conn| {
+            diesel::sql_query("SELECT id FROM player WHERE nickname = 'testprofile'")
+                .load::<PlayerId>(conn)
+        })
+        .await
+        .map_err(|e| eyre::eyre!("{:?}", e))??[0]
+        .id;
+
+    // Update player attributes (or insert if not exists)
+    conn.interact(move |conn| {
+        // In SQLite, we can use the INSERT OR REPLACE statement which is an UPSERT operation
+        diesel::sql_query(format!(
+            "INSERT OR REPLACE INTO player_attributes 
+             (player_id, class_id, rank_id, strength, dexterity, physique, luck, intellect, experience, level, valor)
+             VALUES ({}, 1, 1, 10, 8, 6, 7, 5, 100, 2, 5)",
+            player_id
+        ))
+        .execute(conn)
+    })
+    .await
+    .map_err(|e| eyre::eyre!("{:?}", e))??;
+
+    // Manually add class and rank data to the cache
+    let mut cache_conn = state.cache_pool.get().await?;
+
+    // Add class data to the cache
+    cache_conn
+        .hset::<&str, i32, String, ()>(CacheKey::ClassTable.as_ref(), 1, "Warrior".to_string())
+        .await?;
+
+    // Add rank data to cache
+    cache_conn
+        .hset::<&str, i32, String, ()>(CacheKey::RankTable.as_ref(), 1, "Recruit".to_string())
+        .await?;
+
+    // Make a request to the profile endpoint
+    let profile_res = server.get(&format!("/profile/{}", username)).await;
+
+    profile_res.assert_status_ok();
+    profile_res.assert_json_contains(&serde_json::json!({
+        "nickname": username,
+        "level": 2,
+        "rank": "Recruit",
+        "spec": "Warrior",
+        "strength": 10,
+        "dexterity": 8,
+        "physique": 6,
+        "luck": 7,
+        "intellect": 5
+    }));
+
+    // Clean up
     after_test(state.db_pool.clone()).await?;
 
     Ok(())

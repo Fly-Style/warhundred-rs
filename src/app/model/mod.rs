@@ -1,3 +1,3 @@
 pub mod cache;
 pub mod player;
-mod r#static;
+pub mod r#static;

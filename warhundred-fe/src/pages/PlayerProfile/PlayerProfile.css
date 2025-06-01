@@ -1,6 +1,6 @@
 /* Player Profile Page Styles */
 .player-profile-page {
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   margin: 0 auto;
   padding: 1vh;
@@ -36,6 +36,18 @@
   padding: 0.3vh 0.8vw;
   border-radius: 0.3vw;
   font-size: clamp(0.65rem, 0.9vw, 0.9rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+}
+
+.rank-image-placeholder,
+.class-image-placeholder {
+  width: clamp(0.9rem, 1.2vw, 1.2rem);
+  height: clamp(0.9rem, 1.2vw, 1.2rem);
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 0.2vw;
+  display: inline-block;
 }
 
 .player-profile-content {

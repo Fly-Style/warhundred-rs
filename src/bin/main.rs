@@ -1,3 +1,4 @@
+use axum::Router;
 use deadpool_diesel::sqlite::Manager;
 use deadpool_diesel::Pool;
 use dotenvy::dotenv;
@@ -12,8 +13,10 @@ use tracing_subscriber::{EnvFilter, FmtSubscriber};
 use warhundred_rs::app::db::{migration_connection, run_migrations};
 use warhundred_rs::app::middleware::cache_middleware::CacheMiddleware;
 use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
+use warhundred_rs::app::middleware::static_tables_cache_middleware::StaticTablesCacheMiddleware;
 use warhundred_rs::app::redis::RedisConnectionManager;
 use warhundred_rs::app_state::AppState;
+use warhundred_rs::routes::profile_routes::profile_router;
 use warhundred_rs::routes::root_routes::root_router;
 
 #[tokio::main]
@@ -53,7 +56,7 @@ async fn main() -> eyre::Result<()> {
         )
     };
 
-    // Setup HTTP routes
+    // Set up HTTP routes
     let player_middleware = Arc::new(
         PlayerMiddleware::builder()
             .db_pool(db_pool.clone())
@@ -65,16 +68,26 @@ async fn main() -> eyre::Result<()> {
             .cache_pool(cache_pool.clone())
             .build(),
     );
+    let static_table_middleware = Arc::new(
+        StaticTablesCacheMiddleware::builder()
+            .db_pool(db_pool.clone())
+            .cache_pool(cache_pool.clone())
+            .build(),
+    );
 
     let state = AppState {
         db_pool,
         cache_pool,
         player_middleware,
         cache_middleware,
+        static_table_middleware,
     };
 
     // Setup HTTP server
-    let app = root_router().with_state(state);
+    let app = Router::new()
+        .merge(root_router())
+        .merge(profile_router())
+        .with_state(state);
 
     // TODO: use nginx or similar for production to host static files
     let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();

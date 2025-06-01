@@ -26,7 +26,7 @@ export const AppRoutes = () => {
 /* eslint-disable react-refresh/only-export-components */
 export const ROUTES = {
   HOME: '/',
-  PLAYER_PROFILE: '/player/profile',
+  PLAYER_PROFILE: '/profile',
   // Add more routes as needed
 };
 /* eslint-enable react-refresh/only-export-components */

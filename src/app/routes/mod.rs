@@ -1,6 +1,7 @@
 use crate::model::cache::PlayerInZone;
 use serde::{Deserialize, Serialize};
 
+pub mod profile_routes;
 pub mod root_routes;
 
 #[derive(Debug, Deserialize)]

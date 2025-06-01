@@ -21,6 +21,9 @@ pub struct PlayerRankTable {
     pub min_level: i32,
     pub rank_name_EN: String,
     pub rank_name_FR: String,
+    pub rank_name_UA: String,
+    pub rank_pic_url_EN: Option<String>,
+    pub rank_pic_url_FR: Option<String>,
 }
 
 #[derive(Queryable, Debug, Clone)]

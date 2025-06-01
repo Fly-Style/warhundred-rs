@@ -1,4 +1,6 @@
+use crate::app::middleware::cache_middleware::CacheMiddleware;
 use crate::app::middleware::player_middleware::PlayerMiddleware;
+use crate::app::middleware::static_tables_cache_middleware::StaticTablesCacheMiddleware;
 use crate::app::redis::RedisConnectionManager;
 use crate::error::AppError;
 use axum::extract::FromRequestParts;
@@ -12,7 +14,6 @@ use jsonwebtoken::Algorithm::HS512;
 use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use crate::app::middleware::cache_middleware::CacheMiddleware;
 
 pub const JWT_AUTH_SECRET: &str = "1vTDxVKBx6UMSwvYoRGMokJy3dTPrhSVwsSu5yCoPexukstyMtSjEK3MPUpF9t1";
 
@@ -22,6 +23,7 @@ pub struct AppState {
     pub cache_pool: Arc<bb8::Pool<RedisConnectionManager>>,
     pub player_middleware: Arc<PlayerMiddleware>,
     pub cache_middleware: Arc<CacheMiddleware>,
+    pub static_table_middleware: Arc<StaticTablesCacheMiddleware>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

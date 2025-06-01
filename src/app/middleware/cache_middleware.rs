@@ -17,6 +17,12 @@ pub enum CacheKey {
     // multiple containers, zone_{zone_id} -> player_id
     #[strum(serialize = "zone")]
     ZonePlayers,
+
+    #[strum(serialize = "rank_table")]
+    RankTable,
+
+    #[strum(serialize = "class_table")]
+    ClassTable,
 }
 
 #[derive(Builder)]
