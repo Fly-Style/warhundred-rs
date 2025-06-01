@@ -2,10 +2,12 @@ use crate::app::redis::{CacheKey, RedisConnectionManager};
 use crate::error::AppError::PlayerNotFound;
 use crate::error::{AppError, Result};
 use crate::model::player::{Player, PlayerAttributes};
+use crate::model::DefaultModel;
 use crate::schema::player::dsl::player;
 use crate::schema::player::nickname;
 use crate::schema::player_attributes::dsl::player_attributes;
 use bon::Builder;
+use diesel::result::Error::RollbackTransaction;
 use diesel::QueryDsl;
 use diesel::{Connection, ExpressionMethods, RunQueryDsl, SelectableHelper};
 use redis::AsyncCommands;
@@ -58,12 +60,16 @@ impl PlayerMiddleware {
                         .returning(Player::as_returning())
                         .get_result(conn)?;
 
+                    let Some(player_id) = p.id else {
+                        return Err(RollbackTransaction);
+                    };
+
                     // Insert defaults into `player_attributes`
                     diesel::insert_into(player_attributes)
-                        .values(PlayerAttributes::default())
+                        .values(PlayerAttributes::default_model(player_id))
                         .execute(conn)?;
 
-                    Ok::<Player, deadpool_diesel::Error>(p)
+                    Ok(p)
                 })
             })
             .await?;

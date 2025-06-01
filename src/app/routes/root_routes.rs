@@ -54,7 +54,7 @@ pub(crate) async fn register(
     };
 
     let user = player_middleware
-        .register_player(new_player)
+        .register_player_transaction(new_player)
         .await
         .map_err(|_| AppError::PlayerCannotRegister(nickname))?;
 

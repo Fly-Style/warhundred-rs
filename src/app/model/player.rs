@@ -1,3 +1,4 @@
+use crate::model::DefaultModel;
 use chrono::naive::NaiveDateTime;
 use diesel::prelude::*;
 use std::fmt::Debug;
@@ -63,5 +64,23 @@ impl Debug for Player {
             .field("last_login_time", &self.last_login_time)
             .field("guild_id", &self.guild_id)
             .finish()
+    }
+}
+
+impl DefaultModel for PlayerAttributes {
+    fn default_model(id: i32) -> Self {
+        Self {
+            player_id: id,
+            class_id: 0,
+            rank_id: 1,
+            strength: 3,
+            dexterity: 3,
+            physique: 3,
+            luck: 0,
+            intellect: 0,
+            experience: 0,
+            level: 1,
+            valor: 0,
+        }
     }
 }

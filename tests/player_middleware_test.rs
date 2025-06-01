@@ -2,6 +2,7 @@ use crate::common::{ctx, redis_conn_uri, start_containers, STD_SQLITE_TEST_URL};
 use axum::{http, Router};
 use axum_test::TestServer;
 use deadpool_diesel::sqlite::Pool;
+use deadpool_diesel::Error;
 use diesel::{sql_types::Integer, QueryableByName, RunQueryDsl};
 use dotenvy::dotenv;
 use http::header::CONTENT_TYPE;
@@ -60,6 +61,26 @@ pub async fn app() -> eyre::Result<App> {
             banned INTEGER);",
         )
         .execute(conn)
+        .expect("Player table creation failed");
+
+        diesel::sql_query(
+            "CREATE TABLE IF NOT EXISTS player_attributes (\
+                player_id INTEGER NOT NULL PRIMARY KEY,
+                class_id INTEGER NOT NULL DEFAULT 1,
+                rank_id INTEGER NOT NULL DEFAULT 1,
+                strength INTEGER NOT NULL DEFAULT 0,
+                dexterity INTEGER NOT NULL DEFAULT 0,
+                physique INTEGER NOT NULL DEFAULT 0,
+                luck INTEGER NOT NULL DEFAULT 0,
+                intellect INTEGER NOT NULL DEFAULT 0,
+                experience INTEGER NOT NULL DEFAULT 0,
+                level INTEGER NOT NULL DEFAULT 0,
+                valor INTEGER NOT NULL DEFAULT 0);",
+        )
+        .execute(conn)
+        .expect("Player table creation failed");
+
+        Ok::<(), Error>(())
     })
     .await
     .map_err(|e| eyre::eyre!("{:?}", e))??;
@@ -188,27 +209,6 @@ async fn test_player_profile(#[future] app: eyre::Result<App>) -> eyre::Result<(
 
     // Create the necessary tables
     let conn = state.db_pool.get().await?;
-
-    // Create a player_attributes table
-    conn.interact(|conn| {
-        diesel::sql_query(
-            "CREATE TABLE IF NOT EXISTS player_attributes (\
-                player_id INTEGER NOT NULL PRIMARY KEY,
-                class_id INTEGER NOT NULL DEFAULT 1,
-                rank_id INTEGER NOT NULL DEFAULT 1,
-                strength INTEGER NOT NULL DEFAULT 0,
-                dexterity INTEGER NOT NULL DEFAULT 0,
-                physique INTEGER NOT NULL DEFAULT 0,
-                luck INTEGER NOT NULL DEFAULT 0,
-                intellect INTEGER NOT NULL DEFAULT 0,
-                experience INTEGER NOT NULL DEFAULT 0,
-                level INTEGER NOT NULL DEFAULT 0,
-                valor INTEGER NOT NULL DEFAULT 0);",
-        )
-        .execute(conn)
-    })
-    .await
-    .map_err(|e| eyre::eyre!("{:?}", e))??;
 
     // Register a test player
     let username = "testprofile";
