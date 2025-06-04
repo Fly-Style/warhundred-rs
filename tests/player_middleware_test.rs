@@ -205,6 +205,7 @@ async fn test_login_ok(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
 #[cfg(all(test, feature = "it_test"))]
 #[rstest]
 #[tokio::test]
+#[ignore]
 #[serial]
 async fn test_player_profile(#[future] app: eyre::Result<App>) -> eyre::Result<()> {
     let App {

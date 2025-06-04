@@ -22,10 +22,7 @@ jobs:
       - name: Install protobuf
         run: sudo apt install -y --no-install-recommends libprotobuf-dev protobuf-compiler
 
-      - name: Build dependencies
-        run: cargo build --features it_test
-
-      - name: Actually run the tests
+      - name: Run the tests
         run: cargo test --features it_test
 
   build-and-push-image:
