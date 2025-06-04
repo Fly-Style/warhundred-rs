@@ -6,6 +6,8 @@ on:
 
 permissions:
   packages: write
+  contents: read
+  deployments: read
 
 jobs:
   run-tests:
@@ -22,7 +24,6 @@ jobs:
 
       - name: Actually run the tests
         run: cargo test --features it_test
-        working-directory: doc-test
 
   build-and-push-image:
     runs-on: ubuntu-latest
