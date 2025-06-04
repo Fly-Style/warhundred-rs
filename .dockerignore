@@ -1,0 +1,7 @@
+warhundred-fe/node_modules
+.git
+.gitignore
+.junie
+*.md
+dist
+target
