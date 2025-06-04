@@ -1,0 +1,51 @@
+name: build
+on:
+  push:
+    branches:
+      - "master"
+
+permissions:
+  packages: write
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.87
+
+      - name: Build dependencies
+        run: cargo build --features it_test
+
+      - name: Actually run the tests
+        run: cargo test --features it_test
+        working-directory: doc-test
+
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    needs:
+      - run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: |
+            TARGET_PROFILE=debug
+          push: true
+          tags: |
+            ghcr.io/Fly-Style/warhundred-rs:latest
+            ghcr.io/Fly-Style/warhundred-rs:${{ github.sha }}

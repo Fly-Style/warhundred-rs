@@ -32,11 +32,34 @@ RUN cargo chef cook $COMPILE_PROFILE --recipe-path recipe.json
 COPY . .
 RUN cargo build $COMPILE_PROFILE --bin main
 
-FROM alpine:3.22
+FROM debian:stable-slim
 
 WORKDIR /app
 
 ARG TARGET_PROFILE
 ENV TARGET_PROFILE=${TARGET_PROFILE}
 
-COPY --from=builder /app/target/${TARGET_PROFILE}/main /bin
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libsqlite3-dev sqlite3 \
+    && rm -rf /var/lib/apt/lists/* /tmp/*
+
+#ARG UID=10001
+
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "10001" \
+    appuser
+
+USER appuser
+
+COPY --from=builder /app/target/${TARGET_PROFILE}/main /bin/
+COPY --from=builder /app/public /bin/public
+
+# Expose the port that the application listens on.
+EXPOSE 8000
+
+# What the container should run when it is started.
+ENTRYPOINT [ "main" ]
