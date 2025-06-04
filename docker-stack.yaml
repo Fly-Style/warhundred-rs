@@ -23,6 +23,7 @@ services:
     volumes:
       - letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
+      - /var/www:/app/public
 
   dragonfly:
     image: 'docker.dragonflydb.io/dragonflydb/dragonfly'

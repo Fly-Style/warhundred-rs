@@ -19,6 +19,9 @@ jobs:
         with:
           toolchain: 1.87
 
+      - name: Install protobuf
+        run: sudo apt install -y --no-install-recommends libprotobuf-dev protobuf-compiler
+
       - name: Build dependencies
         run: cargo build --features it_test
 

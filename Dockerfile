@@ -56,7 +56,7 @@ RUN adduser \
 USER appuser
 
 COPY --from=builder /app/target/${TARGET_PROFILE}/main /bin/
-COPY --from=builder /app/public /bin/public
+COPY --from=builder /app/public /app/public
 
 # Expose the port that the application listens on.
 EXPOSE 8000
