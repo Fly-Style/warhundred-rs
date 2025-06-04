@@ -48,5 +48,5 @@ jobs:
             TARGET_PROFILE=debug
           push: true
           tags: |
-            ghcr.io/Fly-Style/warhundred-rs:latest
-            ghcr.io/Fly-Style/warhundred-rs:${{ github.sha }}
+            ghcr.io/fly-style/warhundred-rs:latest
+            ghcr.io/fly-style/warhundred-rs:${{ github.sha }}
