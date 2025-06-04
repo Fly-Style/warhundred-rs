@@ -12,6 +12,7 @@ use serial_test::serial;
 use std::sync::Arc;
 use testcontainers::ContainerAsync;
 use testcontainers_modules::redis::Redis;
+use tracing_subscriber::{EnvFilter, FmtSubscriber};
 use warhundred_rs::app::redis::CacheKey;
 use warhundred_rs::app_state::AppState;
 use warhundred_rs::routes::profile_routes::profile_router;
@@ -104,7 +105,12 @@ pub async fn app() -> eyre::Result<App> {
 
 pub async fn after_test(pool: Arc<Pool>) -> eyre::Result<()> {
     let conn = pool.get().await?;
+
     conn.interact(|conn| diesel::sql_query("DROP TABLE player;").execute(conn))
+        .await
+        .map_err(|e| eyre::eyre!("{:?}", e))??;
+
+    conn.interact(|conn| diesel::sql_query("; DROP TABLE player_attributes;").execute(conn))
         .await
         .map_err(|e| eyre::eyre!("{:?}", e))??;
 
@@ -207,11 +213,16 @@ async fn test_player_profile(#[future] app: eyre::Result<App>) -> eyre::Result<(
         state,
     } = app.await?;
 
+    let subscriber = FmtSubscriber::builder()
+        .with_env_filter(EnvFilter::from_default_env())
+        .finish();
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
     // Create the necessary tables
     let conn = state.db_pool.get().await?;
 
     // Register a test player
-    let username = "testprofile";
+    let username = "test1";
     let email = "profile@test.com";
     let password = "password";
 
@@ -226,22 +237,33 @@ async fn test_player_profile(#[future] app: eyre::Result<App>) -> eyre::Result<(
         .await;
 
     register_res.assert_status_ok();
+    // Ensure the registration was successful
+    register_res.assert_json_contains(&serde_json::json!({
+        "nickname": username,
+        "registered": true,
+    }));
 
     // Get the player ID
-    let player_id = conn
+    let player_ids = conn
         .interact(|conn| {
-            diesel::sql_query("SELECT id FROM player WHERE nickname = 'testprofile'")
+            diesel::sql_query("SELECT id FROM player WHERE nickname = 'test1'")
                 .load::<PlayerId>(conn)
         })
         .await
-        .map_err(|e| eyre::eyre!("{:?}", e))??[0]
-        .id;
+        .map_err(|e| eyre::eyre!("{:?}", e))?
+        .unwrap();
+
+    assert!(
+        !player_ids.is_empty(),
+        "Player should exist in the database"
+    );
+    let player_id = player_ids[0].id;
 
     // Update player attributes (or insert if not exists)
     conn.interact(move |conn| {
         // In SQLite, we can use the INSERT OR REPLACE statement which is an UPSERT operation
         diesel::sql_query(format!(
-            "INSERT OR REPLACE INTO player_attributes 
+            "INSERT OR REPLACE INTO player_attributes
              (player_id, class_id, rank_id, strength, dexterity, physique, luck, intellect, experience, level, valor)
              VALUES ({}, 1, 1, 10, 8, 6, 7, 5, 100, 2, 5)",
             player_id
