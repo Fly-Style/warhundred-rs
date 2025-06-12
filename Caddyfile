@@ -1,0 +1,42 @@
+srv851138.hstgr.cloud {
+    # Enable automatic HTTPS
+    tls alex.syrotenko.official@gmail.com
+
+    # Enable compression
+    encode gzip
+
+    # Reverse proxy to the server service
+    reverse_proxy server:8000 {
+        # Health checks
+        health_path /ping
+        health_interval 30s
+    }
+
+    # Security headers
+    header {
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        # Enable XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Prevent clickjacking
+        X-Frame-Options "DENY"
+        # Control referrer information
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Log access
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# Redirect www to non-www
+www.srv851138.hstgr.cloud {
+    redir https://srv851138.hstgr.cloud{uri} permanent
+}
+
+# Redirect HTTP to HTTPS (handled automatically by Caddy, but explicit for clarity)
+http://srv851138.hstgr.cloud {
+    redir https://srv851138.hstgr.cloud{uri} permanent
+}

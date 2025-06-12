@@ -1,32 +1,25 @@
 services:
-  traefik:
-    image: traefik:v3.1
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=alex.syrotenko.official@gmail.com"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--api.insecure=false"
-      - "--accesslog=true"
-      - "--log.level=INFO"
+  caddy:
+    image: caddy:2.7
     ports:
-      - mode: host
-        protocol: tcp
-        published: 80
-        target: 80
-      - mode: host
-        protocol: tcp
-        published: 443
-        target: 443
+      - "80:80"
+      - "443:443"
     volumes:
-      - letsencrypt:/letsencrypt
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/www:/app/public
+      - caddy_data:/data
+      - caddy_config:/config
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+      - caddy_logs:/var/log/caddy
+    configs:
+      - source: caddy_config_file
+        target: /etc/caddy/Caddyfile
+    command: caddy run --config /etc/caddy/Caddyfile
+    deploy:
+      update_config:
+        order: start-first
+      restart_policy:
+        condition: on-failure
 
   dragonfly:
     image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
@@ -39,27 +32,27 @@ services:
 
   server:
     image: ghcr.io/fly-style/warhundred-rs:${GIT_COMMIT_HASH:-latest}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.web.loadbalancer.server.port=8000"
-      - "traefik.http.routers.web.rule=Host(`srv851138.hstgr.cloud`)"
-      - "traefik.http.routers.web.entrypoints=websecure"
-      - "traefik.http.routers.web.tls.certresolver=myresolver"
+    ports:
+      - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:///app/database.db
       - REDIS_URL=redis://dragonfly:6379
     volumes:
       - sqlitedata:/app
     deploy:
-      update_config:
-        order: start-first
       restart_policy:
         condition: on-failure
     depends_on:
-      - traefik
+      - caddy
       - dragonfly
 
 volumes:
   dragonflydata:
-  letsencrypt:
+  caddy_data:
+  caddy_config:
+  caddy_logs:
   sqlitedata:
+
+configs:
+  caddy_config_file:
+    file: ./Caddyfile
