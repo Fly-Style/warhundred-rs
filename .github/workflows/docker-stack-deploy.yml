@@ -18,7 +18,7 @@ jobs:
         with:
           name: warhundred-rs
           file: docker-stack.yaml
-          host: google.com
+          host: srv851138.hstgr.cloud
           user: sasha
           ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           env_file: ./envfile
