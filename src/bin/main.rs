@@ -10,7 +10,6 @@ use tower_http::{
     trace::TraceLayer,
 };
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
-use warhundred_rs::app::db::{migration_connection, run_migrations};
 use warhundred_rs::app::middleware::cache_middleware::CacheMiddleware;
 use warhundred_rs::app::middleware::player_middleware::PlayerMiddleware;
 use warhundred_rs::app::middleware::static_tables_cache_middleware::StaticTablesCacheMiddleware;
@@ -32,14 +31,6 @@ async fn main() -> eyre::Result<()> {
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let redis_uri = env::var("REDIS_URL").expect("REDIS_URL must be set");
-
-    // Setup database connection pool
-    {
-        // Run migrations
-        let connection = &mut migration_connection(database_url.as_ref());
-        run_migrations(connection).unwrap();
-        tracing::info!("Migrations applied successfully.");
-    }
 
     let manager = Manager::new(database_url, deadpool_diesel::Runtime::Tokio1);
     let db_pool = Arc::new(Pool::builder(manager).build()?);

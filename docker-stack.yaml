@@ -35,15 +35,13 @@ services:
       - dragonflydata:/data
 
   server:
-    image: ghcr.io/Fly-Style/warhundred-rs:${GIT_COMMIT_HASH:-latest}
+    image: ghcr.io/fly-style/warhundred-rs:${GIT_COMMIT_HASH:-latest}
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.web.loadbalancer.server.port=8000"
-      - "traefik.http.routers.web.rule=Host(`zenful.site`)"
+      - "traefik.http.routers.web.rule=Host(`srv851138.hstgr.cloud`)"
       - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.routers.web.tls.certresolver=myresolver"
-    secrets:
-      - db-password
     environment:
       - DATABASE_URL=sqlite:///app/database.db
       - REDIS_URL=redis://dragonfly:6379
@@ -53,6 +51,7 @@ services:
       update_config:
         order: start-first
     depends_on:
+      - traefik
       - dragonfly
 
 volumes:
