@@ -121,14 +121,29 @@ describe('BaseCanvas', () => {
 
   it('does not call renderContent if it is not a function', () => {
     // Arrange
+    // Temporarily suppress prop type warnings for this test
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      // Filter out prop type warnings but keep other errors
+      if (args[0] && args[0].includes('Failed prop type')) {
+        return;
+      }
+      originalConsoleError(...args);
+    };
+
     const renderContentMock = 'not a function';
 
-    // Act
-    render(<BaseCanvas renderContent={renderContentMock} />);
+    try {
+      // Act
+      render(<BaseCanvas renderContent={renderContentMock} />);
 
-    // Assert
-    // Since renderContent is not a function, it should not be called
-    // We can't directly test this, but we can verify that no errors were thrown
-    expect(true).toBe(true);
+      // Assert
+      // Since renderContent is not a function, it should not be called
+      // We can't directly test this, but we can verify that no errors were thrown
+      expect(true).toBe(true);
+    } finally {
+      // Restore console.error
+      console.error = originalConsoleError;
+    }
   });
 });

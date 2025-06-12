@@ -1,6 +1,6 @@
 import {useState} from "react";
 // import {useNavigate} from "react-router-dom"; // Uncomment when navigation is needed
-import axios from "axios";
+import authService from "../../../services/authService";
 import "../EntryPage.css"
 
 export const RegisterForm = () => {
@@ -12,7 +12,7 @@ export const RegisterForm = () => {
   const submitHandler = (e) => {
     e.preventDefault();
     const formData = {username: username, password: pwd, email: email};
-    axios.post(`${import.meta.env.VITE_SERVER_URL}/register`, formData, {
+    authService.api.post(`/register`, formData, {
       headers: {'Content-Type': 'application/json'}
     }).then(() => {
       alert("Register is successful.")

@@ -6,11 +6,7 @@ srv851138.hstgr.cloud {
     encode gzip
 
     # Reverse proxy to the server service
-    reverse_proxy server:8000 {
-        # Health checks
-        health_path /ping
-        health_interval 30s
-    }
+    reverse_proxy server:8000
 
     # Security headers
     header {

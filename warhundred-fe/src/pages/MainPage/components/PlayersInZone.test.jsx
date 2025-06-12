@@ -1,10 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { PlayersInZone } from './PlayersInZone';
-import axios from 'axios';
 
-// Mock axios
-vi.mock('axios');
+// Mock authService
+vi.mock('../../../services/authService', () => ({
+  default: {
+    api: {
+      get: vi.fn()
+    }
+  }
+}));
+
+// Import the mocked service
+import authService from '../../../services/authService';
 
 describe('PlayersInZone', () => {
   beforeEach(() => {
@@ -42,7 +50,7 @@ describe('PlayersInZone', () => {
 
   it('shows loading state when fetching data', async () => {
     // Arrange
-    axios.get.mockImplementation(() => new Promise(() => {
+    authService.api.get.mockImplementation(() => new Promise(() => {
       // This promise never resolves, keeping the component in loading state
       setTimeout(() => {}, 1000);
     }));
@@ -56,7 +64,7 @@ describe('PlayersInZone', () => {
 
   it('shows error message when API call fails', async () => {
     // Arrange
-    axios.get.mockRejectedValue(new Error('Network error'));
+    authService.api.get.mockRejectedValue(new Error('Network error'));
 
     // Act
     render(<PlayersInZone />);
@@ -69,7 +77,7 @@ describe('PlayersInZone', () => {
 
   it('shows empty state when no players are returned', async () => {
     // Arrange
-    axios.get.mockResolvedValue({
+    authService.api.get.mockResolvedValue({
       status: 200,
       data: []
     });
@@ -89,7 +97,7 @@ describe('PlayersInZone', () => {
       { id: 1, nickname: 'TestPlayer', level: 4 }
     ];
 
-    axios.get.mockResolvedValue({
+    authService.api.get.mockResolvedValue({
       status: 200,
       data: mockPlayers
     });
@@ -98,22 +106,22 @@ describe('PlayersInZone', () => {
     render(<PlayersInZone />);
 
     // Assert
-    expect(axios.get).toHaveBeenCalledWith('/zone/players');
+    expect(authService.api.get).toHaveBeenCalledWith('/zone/players');
 
     await waitFor(() => {
       expect(screen.getByText('TestPlayer[4]')).toBeInTheDocument();
     });
 
-    // Check that setInterval was called (indirectly by checking if axios.get was called)
-    expect(axios.get).toHaveBeenCalledTimes(1);
+    // Check that setInterval was called (indirectly by checking if authService.api.get was called)
+    expect(authService.api.get).toHaveBeenCalledTimes(1);
 
     // We can't easily test the interval directly, but we've verified the initial call
   });
 
   it('cleans up interval on unmount', () => {
     // Arrange
-    // Mock axios to return a resolved promise so the interval is set up
-    axios.get.mockResolvedValue({
+    // Mock authService.api to return a resolved promise so the interval is set up
+    authService.api.get.mockResolvedValue({
       status: 200,
       data: []
     });

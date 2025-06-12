@@ -18,7 +18,7 @@ vi.mock('../../context/AuthProvider.jsx', () => ({
 }));
 
 describe('RequireAuth', () => {
-  it('renders MainPage component (current implementation)', () => {
+  it('renders EntryPage when user is not authenticated', () => {
     // Arrange
     useAuth.mockReturnValue({ user: null });
 
@@ -26,16 +26,11 @@ describe('RequireAuth', () => {
     render(<RequireAuth />);
 
     // Assert
-    expect(screen.getByTestId('main-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('entry-page')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('main-page')).not.toBeInTheDocument();
+    expect(screen.getByTestId('entry-page')).toBeInTheDocument();
   });
 
-  // Tests for the commented out functionality
-  // These tests will fail with the current implementation
-  // but are included to document the expected behavior
-  // when the conditional rendering is uncommented
-
-  it('renders MainPage when user is authenticated (commented functionality)', () => {
+  it('renders MainPage when user is authenticated', () => {
     // Arrange
     useAuth.mockReturnValue({ user: 'testuser' });
 
@@ -43,27 +38,6 @@ describe('RequireAuth', () => {
     render(<RequireAuth />);
 
     // Assert
-    // With the current implementation, this will always render MainPage
-    // When the conditional is uncommented, it should render MainPage when user exists
-    expect(screen.getByTestId('main-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('entry-page')).not.toBeInTheDocument();
-  });
-
-  it('renders EntryPage when user is not authenticated (commented functionality)', () => {
-    // Arrange
-    useAuth.mockReturnValue({ user: null });
-
-    // Act
-    render(<RequireAuth />);
-
-    // Assert
-    // With the current implementation, this will always render MainPage
-    // When the conditional is uncommented, it should render EntryPage when user is null
-    // This test will fail until the conditional rendering is uncommented
-    // expect(screen.queryByTestId('main-page')).not.toBeInTheDocument();
-    // expect(screen.getByTestId('entry-page')).toBeInTheDocument();
-
-    // For now, we expect MainPage to be rendered regardless of auth state
     expect(screen.getByTestId('main-page')).toBeInTheDocument();
     expect(screen.queryByTestId('entry-page')).not.toBeInTheDocument();
   });

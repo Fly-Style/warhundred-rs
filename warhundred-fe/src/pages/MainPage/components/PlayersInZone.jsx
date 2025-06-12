@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
-import axios from "axios";
 import PropTypes from 'prop-types';
+import authService from "../../../services/authService";
 
 // RankIcon component - SVG placeholder for rank
 const RankIcon = ({rank}) => {
@@ -221,7 +221,7 @@ export const PlayersInZone = ({useTestData = false}) => {
 
         // Make API call to get players in the zone
         // TODO: Make it properly for zone, not for all players online.
-        const response = await axios.get('/zone/players');
+        const response = await authService.api.get('/zone/players');
 
         if (response.status === 200 && Array.isArray(response.data)) {
           setPlayers(response.data);

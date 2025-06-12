@@ -66,8 +66,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 # Set DATABASE_URL for migrations
 ENV DATABASE_URL=/app/database.db
 
-#ARG UID=10001
-
 RUN adduser \
     --disabled-password \
     --gecos "" \
@@ -99,5 +97,3 @@ EXPOSE 8000
 
 # Use entrypoint script to run the binary
 ENTRYPOINT ["/entrypoint.sh"]
-
-CMD ["./app/main"]
