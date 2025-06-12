@@ -16,9 +16,9 @@ jobs:
       - name: Docker Stack Deploy
         uses: cssnr/stack-deploy-action@v1
         with:
-          name: warhundred-rs
+          name: warhundred
           file: docker-stack.yaml
-          host: srv851138.hstgr.cloud
+          host: 185.224.139.109
           user: sasha
           ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           env_file: ./envfile
